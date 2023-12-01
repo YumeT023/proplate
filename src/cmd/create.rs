@@ -8,7 +8,7 @@ use uuid::Uuid;
 use crate::{
     colors::{error, step, success, title},
     shell,
-    template::{find::find_template_by_id, ForkTemplate},
+    template::{find::find_template_by_id, Template},
 };
 
 pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
@@ -17,8 +17,10 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
 
     let cleanup = || {
         println!("{}", step("removing tmp..."));
-        fs::remove_dir_all(&fork.tmp_dir).expect(&error("unable to remove tmp dir"));
+        fs::remove_dir_all(&fork.base_path).expect(&error("unable to remove tmp dir"));
     };
+
+    create_inquiry(&fork);
 
     fs::create_dir_all(dest).map_err(|_| {
         cleanup();
@@ -29,7 +31,7 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
     })?;
 
     println!("{}", step("Copying..."));
-    shell::copy_directory(&fork.tmp_dir, Path::new(dest)).map_err(|e| {
+    shell::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
         cleanup();
         e
     })?;
@@ -43,9 +45,11 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn fork_template<'a>(id: &'a str, dest: &'a str) -> Result<ForkTemplate<'a>, Error> {
+fn create_inquiry(template: &Template) {}
+
+fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
     println!("{}", step("Finding template..."));
-    let template = match find_template_by_id(id) {
+    let mut template = match find_template_by_id(id) {
         Ok(t) => t,
         Err(e) => panic!("{}", e),
     };
@@ -58,5 +62,7 @@ fn fork_template<'a>(id: &'a str, dest: &'a str) -> Result<ForkTemplate<'a>, Err
     println!("{}", step("Forking template..."));
     shell::copy_directory(&template.base_path, path_buf.as_path())?;
 
-    Ok(ForkTemplate::new(template, path_buf))
+    template.base_path = path_buf;
+
+    Ok(template)
 }

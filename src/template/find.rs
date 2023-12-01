@@ -6,7 +6,7 @@ use super::Template;
 
 const BUILT_IN_TEMPLATE_DIR: &str = "built_in";
 
-pub fn find_template_by_id<'a>(id: &'a str) -> Result<Template<'a>, Error> {
+pub fn find_template_by_id(id: &str) -> Result<Template, Error> {
     let path = get_template_path_by_id(id);
 
     if !path.exists() {
@@ -22,7 +22,12 @@ pub fn find_template_by_id<'a>(id: &'a str) -> Result<Template<'a>, Error> {
                     _ => None,
                 })
                 .collect::<Vec<_>>();
-            Ok(Template::build(id, path, file_list))
+            Ok(Template::build(
+                id.to_string(),
+                path,
+                file_list,
+                path.to_str().map(|s| s.to_string()),
+            ))
         }
         _ => Err(Error::not_found(id.to_string())),
     }

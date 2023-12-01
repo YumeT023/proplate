@@ -4,23 +4,19 @@ use crate::colors::error;
 
 pub mod error;
 pub mod find;
+pub mod meta;
 
 #[derive(Debug)]
-pub struct Template<'a> {
-    pub id: &'a str,
+pub struct Template {
+    pub id: String,
     pub base_path: PathBuf,
     pub base_file_list: Vec<OsString>,
+    pub fork_source: Option<String>,
 }
 
-#[derive(Debug)]
-pub struct ForkTemplate<'a> {
-    pub original_template: Template<'a>,
-    pub tmp_dir: PathBuf,
-}
+pub const META_CONF: &str = "meta.json";
 
-const META_CONF: &str = "meta.json";
-
-impl Display for Template<'_> {
+impl Display for Template {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!(
             "TEMPLATE [{}], base_path: {:?}",
@@ -29,12 +25,18 @@ impl Display for Template<'_> {
     }
 }
 
-impl<'a> Template<'a> {
-    pub fn build(id: &'a str, base_path: PathBuf, base_file_list: Vec<OsString>) -> Template<'a> {
+impl Template {
+    pub fn build(
+        id: String,
+        base_path: PathBuf,
+        base_file_list: Vec<OsString>,
+        fork_source: Option<String>,
+    ) -> Template {
         let new = Self {
             id,
             base_path,
             base_file_list,
+            fork_source,
         };
         Template::validate(&new);
         new
@@ -50,15 +52,6 @@ impl<'a> Template<'a> {
 
         if !violations.is_empty() {
             panic!("Error\n{}", error(&violations.join("\n")))
-        }
-    }
-}
-
-impl<'a> ForkTemplate<'a> {
-    pub fn new(original_template: Template<'a>, tmp_dir: PathBuf) -> ForkTemplate<'a> {
-        Self {
-            original_template,
-            tmp_dir,
         }
     }
 }
