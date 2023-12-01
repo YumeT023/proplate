@@ -20,8 +20,6 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
         fs::remove_dir_all(&fork.base_path).expect(&error("unable to remove tmp dir"));
     };
 
-    create_inquiry(&fork);
-
     fs::create_dir_all(dest).map_err(|_| {
         cleanup();
         Error::new(
@@ -44,8 +42,6 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
 
     Ok(())
 }
-
-fn create_inquiry(template: &Template) {}
 
 fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
     println!("{}", step("Finding template..."));

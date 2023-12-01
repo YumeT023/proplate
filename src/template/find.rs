@@ -24,7 +24,7 @@ pub fn find_template_by_id(id: &str) -> Result<Template, Error> {
                 .collect::<Vec<_>>();
             Ok(Template::build(
                 id.to_string(),
-                path,
+                path.clone(),
                 file_list,
                 path.to_str().map(|s| s.to_string()),
             ))

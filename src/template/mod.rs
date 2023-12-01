@@ -2,15 +2,18 @@ use std::{ffi::OsString, fmt::Display, path::PathBuf};
 
 use crate::colors::error;
 
+use self::conf::{get_template_conf, TemplateConf};
+
+pub mod conf;
 pub mod error;
 pub mod find;
-pub mod meta;
 
 #[derive(Debug)]
 pub struct Template {
     pub id: String,
     pub base_path: PathBuf,
     pub base_file_list: Vec<OsString>,
+    pub conf: Option<TemplateConf>,
     pub fork_source: Option<String>,
 }
 
@@ -32,14 +35,16 @@ impl Template {
         base_file_list: Vec<OsString>,
         fork_source: Option<String>,
     ) -> Template {
-        let new = Self {
+        let mut t = Self {
             id,
-            base_path,
+            base_path: base_path.clone(),
             base_file_list,
             fork_source,
+            conf: None,
         };
-        Template::validate(&new);
-        new
+        Template::validate(&t);
+        t.conf = Some(get_template_conf(base_path));
+        t
     }
 
     pub fn validate(template: &Template) {
