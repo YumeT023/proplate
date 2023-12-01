@@ -1,0 +1,10 @@
+# IDE
+/.vscode
+/.idea
+
+# Cargo
+/target
+/cargo.lock
+
+# tmp
+.temp
