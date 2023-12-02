@@ -25,10 +25,14 @@ fn cli() -> Command {
     
 Any Project starter in one tool"#,
         )
-        .subcommand(Command::new("create").args(&[
-            arg!(--template <template> "Template id to start from").required(true),
-            arg!(--dest <dest> "Destination path").required(true),
-        ]))
+        .subcommand(
+            Command::new("create")
+                .about("create project from template")
+                .args(&[
+                    arg!(--template <template> "Template id to start from").required(true),
+                    arg!(--dest <dest> "Destination path").required(true),
+                ]),
+        )
 }
 
 fn main() -> Result<(), Error> {
