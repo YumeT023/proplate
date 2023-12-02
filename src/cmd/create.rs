@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs,
     io::{Error, ErrorKind::AlreadyExists},
     path::{Path, PathBuf},
@@ -7,6 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     colors::{error, step, success, title},
+    settings::adapter::AskUser,
     shell,
     template::{find::find_template_by_id, Template},
 };
@@ -19,6 +21,8 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
         println!("{}", step("removing tmp..."));
         fs::remove_dir_all(&fork.base_path).expect(&error("unable to remove tmp dir"));
     };
+
+    initialize_template(&fork)?;
 
     fs::create_dir_all(dest).map_err(|_| {
         cleanup();
@@ -61,4 +65,20 @@ fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
     template.base_path = path_buf;
 
     Ok(template)
+}
+
+fn initialize_template(template: &Template) -> Result<(), Error> {
+    let mut values: HashMap<String, String> = HashMap::new();
+
+    template
+        .conf
+        .args
+        .iter()
+        .map(|arg| AskUser::from(arg))
+        .for_each(|q| {
+            values.insert(q.arg().key.to_string(), q.prompt());
+        });
+
+    dbg!(values);
+    Ok(())
 }

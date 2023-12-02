@@ -2,13 +2,14 @@ use std::{fs, path::PathBuf, process};
 
 use serde::{Deserialize, Serialize};
 
-use crate::colors::error;
+use crate::{colors::error, settings::JSONArg};
 
 use super::META_CONF;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TemplateConf {
-    template_id: String,
+    pub id: String,
+    pub args: Vec<JSONArg>,
 }
 
 pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {

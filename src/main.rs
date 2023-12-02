@@ -3,6 +3,7 @@ use cmd::create::create;
 
 mod cmd;
 mod colors;
+mod settings;
 mod shell;
 mod template;
 
