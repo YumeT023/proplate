@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "$out_dir/dts",
+    "emitDeclarationOnly": true
+  },
+  "exclude": ["node_modules", "**/__tests__/*"]
+}

@@ -1,0 +1,10 @@
+# ide settings
+/.vscode
+/.idea
+
+node_module
+
+# build
+$out_dir
+
+yarn.lock
