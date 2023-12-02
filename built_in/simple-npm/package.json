@@ -1,5 +1,6 @@
 {
-  "name": "simple-npm",
+  "name": "$pkg_name",
   "version": "1.0.0",
+  "type": "$module_type",
   "dependencies": {}
 }

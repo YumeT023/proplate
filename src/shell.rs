@@ -24,3 +24,8 @@ pub fn copy_directory(src: &Path, dst: &Path) -> Result<(), Error> {
     }
     Ok(())
 }
+
+pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> Result<(), Error> {
+    let content = fs::read_to_string(path)?;
+    fs::write(path, f(&content))
+}

@@ -10,6 +10,7 @@ use super::META_CONF;
 pub struct TemplateConf {
     pub id: String,
     pub args: Vec<JSONArg>,
+    pub dynamic_files: Option<Vec<String>>,
 }
 
 pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {

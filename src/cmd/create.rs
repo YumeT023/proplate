@@ -11,6 +11,7 @@ use crate::{
     settings::adapter::AskUser,
     shell,
     template::{find::find_template_by_id, Template},
+    util::interpolate::provide_ctx,
 };
 
 pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
@@ -68,17 +69,27 @@ fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
 }
 
 fn initialize_template(template: &Template) -> Result<(), Error> {
-    let mut values: HashMap<String, String> = HashMap::new();
+    let mut ctx: HashMap<String, String> = HashMap::new();
 
+    println!("{}", title("Template initialization:"));
     template
         .conf
         .args
         .iter()
         .map(|arg| AskUser::from(arg))
         .for_each(|q| {
-            values.insert(q.arg().key.to_string(), q.prompt());
+            ctx.insert(q.arg().key.to_string(), q.prompt());
         });
 
-    dbg!(values);
+    let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();
+
+    println!("{}", step("replacing vars in dynamic files..."));
+    for file_path in dynamic_files {
+        println!("      {}", step(&format!("processing {}", &file_path)));
+        let relative_path = template.base_path.join(file_path);
+        shell::map_file(Path::new(&relative_path), |c| {
+            provide_ctx(c, Some(ctx.clone()))
+        })?
+    }
     Ok(())
 }

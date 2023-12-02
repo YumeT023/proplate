@@ -2,7 +2,7 @@
   "id": "simple-npm",
   "args": [
     {
-      "key": "pkg",
+      "key": "pkg_name",
       "q_type": "Text",
       "label": "Package name"
     },
@@ -12,5 +12,9 @@
       "label": "Import module",
       "options": ["commonjs", "module"]
     }
+  ],
+  "dynamic_files": [
+    "index.js",
+    "package.json"
   ]
 }
