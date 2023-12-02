@@ -1,6 +1,5 @@
 {
   "name": "simple-npm",
   "version": "1.0.0",
-  "dependencies": {
-  }
+  "dependencies": {}
 }
