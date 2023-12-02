@@ -13,8 +13,8 @@ pub struct Template {
     pub id: String,
     pub base_path: PathBuf,
     pub base_file_list: Vec<OsString>,
-    pub conf: Option<TemplateConf>,
     pub fork_source: Option<String>,
+    pub conf: TemplateConf,
 }
 
 pub const META_CONF: &str = "meta.json";
@@ -35,20 +35,17 @@ impl Template {
         base_file_list: Vec<OsString>,
         fork_source: Option<String>,
     ) -> Template {
-        let mut t = Self {
+        Template::validate_filelist(&base_file_list);
+        Self {
             id,
             base_path: base_path.clone(),
             base_file_list,
             fork_source,
-            conf: None,
-        };
-        Template::validate(&t);
-        t.conf = Some(get_template_conf(base_path));
-        t
+            conf: get_template_conf(base_path),
+        }
     }
 
-    pub fn validate(template: &Template) {
-        let filelist = template.base_file_list.clone();
+    fn validate_filelist(filelist: &Vec<OsString>) {
         let mut violations = Vec::<String>::new();
 
         if !filelist.contains(&OsString::from(META_CONF)) {
