@@ -1,8 +1,7 @@
 use std::{ffi::OsString, fmt::Display, path::PathBuf};
 
-use crate::colors::error;
-
 use self::conf::{get_template_conf, TemplateConf};
+use crate::ui;
 
 pub mod conf;
 pub mod error;
@@ -53,7 +52,7 @@ impl Template {
         }
 
         if !violations.is_empty() {
-            panic!("Error\n{}", error(&violations.join("\n")))
+            panic!("Error\n{}", ui::error(&violations.join("\n")))
         }
     }
 }

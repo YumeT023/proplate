@@ -2,10 +2,10 @@ use clap::{arg, Command, Error};
 use cmd::create::create;
 
 mod cmd;
-mod colors;
 mod settings;
 mod shell;
 mod template;
+mod ui;
 mod util;
 
 fn cli() -> Command {

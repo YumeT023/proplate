@@ -7,20 +7,20 @@ use std::{
 use uuid::Uuid;
 
 use crate::{
-    colors::{error, step, success, title},
     settings::adapter::AskUser,
     shell,
     template::{find::find_template_by_id, Template, META_CONF},
+    ui,
     util::interpolate::provide_ctx,
 };
 
 pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
-    println!("{}", title("Setup template"));
+    println!("{}", ui::title("Setup template"));
     let fork = fork_template(template_id, dest)?;
 
     let cleanup = || {
-        println!("{}", step("removing tmp..."));
-        fs::remove_dir_all(&fork.base_path).expect(&error("unable to remove tmp dir"));
+        println!("{}", ui::step("removing tmp..."));
+        fs::remove_dir_all(&fork.base_path).expect(&ui::error("unable to remove tmp dir"));
     };
 
     initialize_template(&fork)?;
@@ -29,11 +29,11 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
         cleanup();
         Error::new(
             AlreadyExists,
-            error(&format!("out dir already exists: {dest}")),
+            ui::error(&format!("out dir already exists: {dest}")),
         )
     })?;
 
-    println!("{}", step("Copying..."));
+    println!("{}", ui::step("Copying..."));
     shell::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
         cleanup();
         e
@@ -41,7 +41,7 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
 
     println!(
         "{}",
-        success("Done, wait a lil moment while we remove temporary files")
+        ui::success("Done, wait a lil moment while we remove temporary files")
     );
     cleanup();
 
@@ -49,7 +49,7 @@ pub fn create(template_id: &str, dest: &str) -> Result<(), Error> {
 }
 
 fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
-    println!("{}", step("Finding template..."));
+    println!("{}", ui::step("Finding template..."));
     let mut template = match find_template_by_id(id) {
         Ok(t) => t,
         Err(e) => panic!("{}", e),
@@ -60,7 +60,7 @@ fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
 
     fs::create_dir_all(&path_buf)?;
 
-    println!("{}", step("Forking template..."));
+    println!("{}", ui::step("Forking template..."));
     shell::copy_directory(&template.base_path, path_buf.as_path())?;
 
     template.base_path = path_buf;
@@ -71,7 +71,7 @@ fn fork_template(id: &str, dest: &str) -> Result<Template, Error> {
 fn initialize_template(template: &Template) -> Result<(), Error> {
     let mut ctx: HashMap<String, String> = HashMap::new();
 
-    println!("{}", title("Template initialization:"));
+    println!("{}", ui::title("Template initialization:"));
     template
         .conf
         .args
@@ -83,16 +83,16 @@ fn initialize_template(template: &Template) -> Result<(), Error> {
 
     let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();
 
-    println!("{}", step("replacing vars in dynamic files..."));
+    println!("{}", ui::step("replacing vars in dynamic files..."));
     for file_path in dynamic_files {
-        println!("      {}", step(&format!("processing {}", &file_path)));
+        println!("      {}", ui::step(&format!("processing {}", &file_path)));
         let relative_path = template.base_path.join(file_path);
         shell::map_file(Path::new(&relative_path), |c| {
             provide_ctx(c, Some(ctx.clone()))
         })?
     }
 
-    println!("{}", step("Deleting unused files..."));
+    println!("{}", ui::step("Deleting unused files..."));
     fs::remove_file(template.base_path.join(META_CONF))?;
 
     Ok(())
