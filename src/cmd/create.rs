@@ -10,7 +10,7 @@ use crate::{
     colors::{error, step, success, title},
     settings::adapter::AskUser,
     shell,
-    template::{find::find_template_by_id, Template},
+    template::{find::find_template_by_id, Template, META_CONF},
     util::interpolate::provide_ctx,
 };
 
@@ -91,5 +91,9 @@ fn initialize_template(template: &Template) -> Result<(), Error> {
             provide_ctx(c, Some(ctx.clone()))
         })?
     }
+
+    println!("{}", step("Deleting unused files..."));
+    fs::remove_file(template.base_path.join(META_CONF))?;
+
     Ok(())
 }
