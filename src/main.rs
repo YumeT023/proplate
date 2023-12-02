@@ -26,8 +26,8 @@ fn cli() -> Command {
 Any Project starter in one tool"#,
         )
         .subcommand(Command::new("create").args(&[
-            arg!(--template <template> "Template id to start from"),
-            arg!(--dest <dest> "Destination path"),
+            arg!(--template <template> "Template id to start from").required(true),
+            arg!(--dest <dest> "Destination path").required(true),
         ]))
 }
 
