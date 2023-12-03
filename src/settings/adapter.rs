@@ -1,4 +1,6 @@
-use inquire::{Select, Text};
+use inquire::{error::InquireResult, Select, Text};
+
+use crate::{errors::ProplateError, ui::AsError};
 
 use super::{JSONArg, JSONArgType};
 
@@ -8,12 +10,17 @@ pub enum AskUser<'a> {
 }
 
 impl<'a> AskUser<'a> {
+    fn handle_prompt(result: InquireResult<String>) -> String {
+        match result {
+            Ok(t) => t,
+            Err(e) => panic!("{}", ProplateError::prompt(&e.to_string()).print_err()),
+        }
+    }
+
     pub fn prompt(&self) -> String {
         match self {
-            AskUser::Text(text, arg) => text.clone().prompt().expect(&format!("arg {}", arg.key)),
-            AskUser::Select(select, arg) => {
-                select.clone().prompt().expect(&format!("arg {}", arg.key))
-            }
+            AskUser::Text(text, _) => AskUser::handle_prompt(text.clone().prompt()),
+            AskUser::Select(select, _) => AskUser::handle_prompt(select.clone().prompt()),
         }
     }
 

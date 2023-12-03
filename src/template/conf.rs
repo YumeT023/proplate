@@ -1,8 +1,12 @@
-use std::{fs, path::PathBuf, process};
+use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{settings::JSONArg, ui};
+use crate::{
+    errors::ProplateError,
+    settings::JSONArg,
+    ui::{self, AsError},
+};
 
 use super::META_CONF;
 
@@ -16,15 +20,12 @@ pub struct TemplateConf {
 pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {
     let path = base_path.join(META_CONF);
     let meta_json = fs::read_to_string(path).expect(&ui::error("Unable to read meta.json"));
-    let conf = match serde_json::from_str(&meta_json) {
-        Ok(c) => c,
-        Err(e) => {
-            println!(
-                "{}",
-                ui::error(&format!("ReadTemplateConfError:\n{}", e.to_string()))
-            );
-            process::exit(1)
-        }
-    };
-    conf
+
+    match serde_json::from_str(&meta_json) {
+        Ok(conf) => conf,
+        Err(e) => panic!(
+            "{}",
+            ProplateError::invalid_template_conf(&e.to_string()).print_err()
+        ),
+    }
 }

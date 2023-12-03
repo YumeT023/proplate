@@ -1,7 +1,8 @@
-use clap::{arg, Command, Error};
+use clap::{arg, Command};
 use cmd::create::create;
 
 mod cmd;
+mod errors;
 mod settings;
 mod shell;
 mod template;
@@ -35,7 +36,7 @@ Any Project starter in one tool"#,
         )
 }
 
-fn main() -> Result<(), Error> {
+fn main() -> Result<(), clap::Error> {
     let matches = cli().get_matches();
     let subcommands = matches.subcommand();
 

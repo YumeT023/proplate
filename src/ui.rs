@@ -15,3 +15,7 @@ pub fn error(s: &str) -> String {
 pub fn success(s: &str) -> String {
     format!("{}", s.green())
 }
+
+pub trait AsError {
+    fn print_err(&self) -> String;
+}

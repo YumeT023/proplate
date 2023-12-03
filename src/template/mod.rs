@@ -4,7 +4,6 @@ use self::conf::{get_template_conf, TemplateConf};
 use crate::ui;
 
 pub mod conf;
-pub mod error;
 pub mod find;
 
 #[derive(Debug)]

@@ -1,16 +1,17 @@
 use std::fs::read_dir;
 use std::path::{Path, PathBuf};
 
-use super::error::Error;
+use crate::errors::{ProplateError, ProplateResult};
+
 use super::Template;
 
 const BUILT_IN_TEMPLATE_DIR: &str = "built_in";
 
-pub fn find_template_by_id(id: &str) -> Result<Template, Error> {
+pub fn find_template_by_id(id: &str) -> ProplateResult<Template> {
     let path = get_template_path_by_id(id);
 
     if !path.exists() {
-        return Err(Error::not_found(id.to_string()));
+        ProplateError::local_template_not_found(id);
     }
 
     match read_dir(&path) {
@@ -29,7 +30,7 @@ pub fn find_template_by_id(id: &str) -> Result<Template, Error> {
                 path.to_str().map(|s| s.to_string()),
             ))
         }
-        _ => Err(Error::not_found(id.to_string())),
+        _ => Err(ProplateError::local_template_not_found(id)),
     }
 }
 
