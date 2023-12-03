@@ -1,11 +1,11 @@
 use owo_colors::OwoColorize;
 
 pub fn title(s: &str) -> String {
-    format!("{}", s.bold().bright_yellow())
+    format!("\n{}", s.bold().bright_yellow())
 }
 
 pub fn step(s: &str) -> String {
-    format!("> {}", s.white())
+    format!("{} {}", ">".blue(), s.white())
 }
 
 pub fn error(s: &str) -> String {
@@ -13,7 +13,7 @@ pub fn error(s: &str) -> String {
 }
 
 pub fn success(s: &str) -> String {
-    format!("{}", s.green())
+    format!("\n{}", s.bright_green())
 }
 
 pub trait AsError {

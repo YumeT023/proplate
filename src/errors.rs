@@ -5,6 +5,7 @@ pub enum ProplateErrorKind {
     TemplateNotFound,
     InvalidTemplate,
     Fs,
+    Git,
     PromptUser,
 }
 
@@ -39,15 +40,12 @@ impl ProplateError {
         )
     }
 
-    pub fn remote_template_not_found(id: &str) -> ProplateError {
-        Self::new(
-            ProplateErrorKind::TemplateNotFound,
-            &format!("Remote template (id={}) is not found.", id),
-        )
-    }
-
     pub fn prompt(details: &str) -> ProplateError {
         Self::new(ProplateErrorKind::PromptUser, details)
+    }
+
+    pub fn git(details: &str) -> ProplateError {
+        Self::new(ProplateErrorKind::Git, details)
     }
 }
 

@@ -12,34 +12,40 @@ use crate::{
     template::{find::find_template_by_id, Template, META_CONF},
     ui::{self, AsError},
     util::interpolate::provide_ctx,
+    wrapper::exec_git_cmd,
 };
 
-pub fn create(template_id: &str, dest: &str) -> ProplateResult<()> {
+#[derive(Debug, Default)]
+pub struct CreateOptions {
+    pub git: bool,
+}
+
+pub fn create(template_id: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
     println!("{}", ui::title("Setup template"));
     let fork = fork_template(template_id, dest)?;
 
     let cleanup = || {
-        println!("{}", ui::step("removing tmp..."));
-        fs::remove_dir_all(&fork.base_path).expect(&ui::error("unable to remove tmp dir"));
+        println!("{}", ui::step("cleaning up..."));
+        fs::remove_dir_all(&fork.base_path)
+            .expect(&ProplateError::fs("unable to cleanup tmp...").print_err())
     };
 
     initialize_template(&fork)?;
+
+    options.git.then(|| init_git_repo(&fork.base_path));
 
     fs::create_dir_all(dest).map_err(|e| {
         cleanup();
         ProplateError::fs(&format!("{}", e.to_string()))
     })?;
 
+    println!("{}", ui::title("Finalizing"));
     println!("{}", ui::step("Copying..."));
     shell::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
         cleanup();
         ProplateError::fs(&format!("{}", e.to_string()))
     })?;
 
-    println!(
-        "{}",
-        ui::success("Done, wait a lil moment while we remove temporary files")
-    );
     cleanup();
 
     Ok(())
@@ -95,5 +101,16 @@ fn initialize_template(template: &Template) -> ProplateResult<()> {
     fs::remove_file(template.base_path.join(META_CONF))
         .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
+    Ok(())
+}
+
+fn init_git_repo(path: &Path) -> ProplateResult<()> {
+    println!("{}", ui::title("Initializing git repo"));
+    exec_git_cmd(["init"], path)?;
+    exec_git_cmd(["add", "-A"], path)?;
+    exec_git_cmd(
+        ["commit", "-m", "chore: initial commit", "--allow-empty"],
+        path,
+    )?;
     Ok(())
 }
