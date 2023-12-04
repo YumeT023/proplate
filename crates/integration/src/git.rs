@@ -3,9 +3,10 @@ use std::{
     process::{Command, Stdio},
 };
 
-use crate::errors::{ProplateError, ProplateResult};
+use proplate_errors::{ProplateError, ProplateResult};
+use proplate_tui::logger;
 
-pub fn exec_git_cmd<'a>(cmd: impl IntoIterator<Item = &'a str>, path: &Path) -> ProplateResult<()> {
+pub fn exec_cmd<'a>(cmd: impl IntoIterator<Item = &'a str>, path: &Path) -> ProplateResult<()> {
     let child = Command::new("git")
         .args(cmd)
         .stdout(Stdio::piped())
@@ -23,7 +24,7 @@ pub fn exec_git_cmd<'a>(cmd: impl IntoIterator<Item = &'a str>, path: &Path) -> 
             if !output.stdout.is_empty() {
                 println!(
                     "{}",
-                    crate::ui::success(&String::from_utf8_lossy(&output.stdout))
+                    logger::success(&String::from_utf8_lossy(&output.stdout))
                 );
             }
             Ok(())

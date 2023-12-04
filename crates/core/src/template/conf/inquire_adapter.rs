@@ -1,6 +1,7 @@
 use inquire::{error::InquireResult, Select, Text};
 
-use crate::{errors::ProplateError, ui::AsError};
+use proplate_errors::ProplateError;
+use proplate_tui::logger::AsError;
 
 use super::{JSONArg, JSONArgType};
 

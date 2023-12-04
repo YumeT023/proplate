@@ -2,13 +2,6 @@ use clap::{arg, Command};
 use cmd::create::{create, CreateOptions};
 
 mod cmd;
-mod errors;
-mod settings;
-mod shell;
-mod template;
-mod ui;
-mod util;
-mod wrapper;
 
 fn cli() -> Command {
     const VERSION: &str = env!("CARGO_PKG_VERSION");

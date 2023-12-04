@@ -1,4 +1,4 @@
-use crate::ui;
+use proplate_tui::logger;
 
 #[derive(Debug)]
 pub enum ProplateErrorKind {
@@ -56,8 +56,8 @@ impl ProplateError {
     }
 }
 
-impl ui::AsError for ProplateError {
+impl logger::AsError for ProplateError {
     fn print_err(&self) -> String {
-        ui::error(&format!("{:?}", self))
+        logger::error(&format!("{:?}", self))
     }
 }

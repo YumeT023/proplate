@@ -1,10 +1,8 @@
 use std::{ffi::OsString, fmt::Display, path::PathBuf};
 
-use self::conf::{get_template_conf, TemplateConf};
-use crate::ui;
+use proplate_tui::logger;
 
-pub mod conf;
-pub mod find;
+use super::conf::{get_template_conf, TemplateConf};
 
 #[derive(Debug)]
 pub struct Template {
@@ -51,7 +49,7 @@ impl Template {
         }
 
         if !violations.is_empty() {
-            panic!("Error\n{}", ui::error(&violations.join("\n")))
+            panic!("Error\n{}", logger::error(&violations.join("\n")))
         }
     }
 }
