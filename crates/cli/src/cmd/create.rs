@@ -6,15 +6,18 @@ use std::{
 };
 use uuid::Uuid;
 
-use crate::{
-    errors::{ProplateError, ProplateResult},
-    settings::adapter::AskUser,
-    shell,
-    template::{find::find_template, Template, META_CONF},
-    ui::{self, AsError},
-    util::interpolate::provide_ctx,
-    wrapper::exec_git_cmd,
+use proplate_core::{
+    fs as pfs,
+    template::{
+        conf::inquire_adapter::AskUser,
+        interpolation::provide_ctx,
+        resolver::find_template,
+        types::{Template, META_CONF},
+    },
 };
+use proplate_errors::{ProplateError, ProplateResult};
+use proplate_integration::git;
+use proplate_tui::logger::{self, AsError};
 
 #[derive(Debug, Default)]
 pub struct CreateOptions {
@@ -22,11 +25,11 @@ pub struct CreateOptions {
 }
 
 pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
-    println!("{}", ui::title("Setup template"));
+    println!("{}", logger::title("Setup template"));
     let fork = fork_template(from, dest)?;
 
     let cleanup = || {
-        println!("{}", ui::step("cleaning up..."));
+        println!("{}", logger::step("cleaning up..."));
         fs::remove_dir_all(&fork.base_path)
             .expect(&ProplateError::fs("unable to cleanup tmp...").print_err())
     };
@@ -40,9 +43,9 @@ pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<
         ProplateError::fs(&format!("{}", e.to_string()))
     })?;
 
-    println!("{}", ui::title("Finalizing"));
-    println!("{}", ui::step("Copying..."));
-    shell::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
+    println!("{}", logger::title("Finalizing"));
+    println!("{}", logger::step("Copying..."));
+    pfs::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
         cleanup();
         ProplateError::fs(&format!("{}", e.to_string()))
     })?;
@@ -53,7 +56,7 @@ pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<
 }
 
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
-    println!("{}", ui::step("Finding template..."));
+    println!("{}", logger::step("Finding template..."));
     let mut template = match find_template(from) {
         Ok(t) => t,
         Err(e) => panic!("{}", e.print_err()),
@@ -66,13 +69,16 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
         fs::create_dir_all(&path_buf)
             .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
-        println!("{}", ui::step("Forking template..."));
-        shell::copy_directory(&template.base_path, path_buf.as_path())
+        println!("{}", logger::step("Forking template..."));
+        pfs::copy_directory(&template.base_path, path_buf.as_path())
             .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
         template.base_path = path_buf;
     } else {
-        println!("{}", ui::step(&format!("Cloned template repo: {}", from)))
+        println!(
+            "{}",
+            logger::step(&format!("Cloned template repo: {}", from))
+        )
     }
 
     Ok(template)
@@ -81,7 +87,7 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
 fn initialize_template(template: &Template) -> ProplateResult<()> {
     let mut ctx: HashMap<String, String> = HashMap::new();
 
-    println!("{}", ui::title("Template initialization:"));
+    println!("{}", logger::title("Template initialization:"));
     template
         .conf
         .args
@@ -93,17 +99,20 @@ fn initialize_template(template: &Template) -> ProplateResult<()> {
 
     let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();
 
-    println!("{}", ui::step("replacing vars in dynamic files..."));
+    println!("{}", logger::step("replacing vars in dynamic files..."));
     for file_path in dynamic_files {
-        println!("      {}", ui::step(&format!("processing {}", &file_path)));
+        println!(
+            "      {}",
+            logger::step(&format!("processing {}", &file_path))
+        );
         let relative_path = template.base_path.join(file_path);
-        shell::map_file(Path::new(&relative_path), |c| {
+        pfs::map_file(Path::new(&relative_path), |c| {
             provide_ctx(c, Some(ctx.clone()))
         })
         .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
     }
 
-    println!("{}", ui::step("Deleting unused files..."));
+    println!("{}", logger::step("Deleting unused files..."));
     fs::remove_file(template.base_path.join(META_CONF))
         .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
@@ -125,10 +134,10 @@ fn init_git_repo(path: &Path) -> ProplateResult<()> {
         fs::remove_dir_all(lockfile).map_err(|e| ProplateError::fs(&e.to_string()))?
     }
 
-    println!("{}", ui::title("Initializing git repo"));
-    exec_git_cmd(["init"], path)?;
-    exec_git_cmd(["add", "-A"], path)?;
-    exec_git_cmd(
+    println!("{}", logger::title("Initializing git repo"));
+    git::exec_cmd(["init"], path)?;
+    git::exec_cmd(["add", "-A"], path)?;
+    git::exec_cmd(
         ["commit", "-m", "chore: initial commit", "--allow-empty"],
         path,
     )?;
