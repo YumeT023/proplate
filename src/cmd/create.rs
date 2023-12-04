@@ -1,3 +1,4 @@
+use inquire::Confirm;
 use std::{
     collections::HashMap,
     fs,
@@ -9,7 +10,7 @@ use crate::{
     errors::{ProplateError, ProplateResult},
     settings::adapter::AskUser,
     shell,
-    template::{find::find_template_by_id, Template, META_CONF},
+    template::{find::find_template, Template, META_CONF},
     ui::{self, AsError},
     util::interpolate::provide_ctx,
     wrapper::exec_git_cmd,
@@ -20,9 +21,9 @@ pub struct CreateOptions {
     pub git: bool,
 }
 
-pub fn create(template_id: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
+pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
     println!("{}", ui::title("Setup template"));
-    let fork = fork_template(template_id, dest)?;
+    let fork = fork_template(from, dest)?;
 
     let cleanup = || {
         println!("{}", ui::step("cleaning up..."));
@@ -51,23 +52,28 @@ pub fn create(template_id: &str, dest: &str, options: CreateOptions) -> Proplate
     Ok(())
 }
 
-fn fork_template(id: &str, dest: &str) -> ProplateResult<Template> {
+fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
     println!("{}", ui::step("Finding template..."));
-    let mut template = match find_template_by_id(id) {
+    let mut template = match find_template(from) {
         Ok(t) => t,
         Err(e) => panic!("{}", e.print_err()),
     };
 
-    let path_str = format!(".temp/{}-{}", dest, Uuid::new_v4());
-    let path_buf = PathBuf::from(path_str);
+    if template.fork_source.is_none() {
+        let path_str = format!(".temp/{}-{}", dest, Uuid::new_v4());
+        let path_buf = PathBuf::from(path_str);
 
-    fs::create_dir_all(&path_buf).map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+        fs::create_dir_all(&path_buf)
+            .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
-    println!("{}", ui::step("Forking template..."));
-    shell::copy_directory(&template.base_path, path_buf.as_path())
-        .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+        println!("{}", ui::step("Forking template..."));
+        shell::copy_directory(&template.base_path, path_buf.as_path())
+            .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
-    template.base_path = path_buf;
+        template.base_path = path_buf;
+    } else {
+        println!("{}", ui::step(&format!("Cloned template repo: {}", from)))
+    }
 
     Ok(template)
 }
@@ -105,6 +111,20 @@ fn initialize_template(template: &Template) -> ProplateResult<()> {
 }
 
 fn init_git_repo(path: &Path) -> ProplateResult<()> {
+    let lockfile = path.join(".git");
+
+    if lockfile.exists() {
+        let init_anyway = Confirm::new(
+            "Git is already initialized in the template, Do you want to reinitialize ?",
+        )
+        .prompt()
+        .map_err(|e| ProplateError::prompt(&e.to_string()))?;
+        if !init_anyway {
+            return Ok(());
+        }
+        fs::remove_dir_all(lockfile).map_err(|e| ProplateError::fs(&e.to_string()))?
+    }
+
     println!("{}", ui::title("Initializing git repo"));
     exec_git_cmd(["init"], path)?;
     exec_git_cmd(["add", "-A"], path)?;

@@ -40,6 +40,13 @@ impl ProplateError {
         )
     }
 
+    pub fn remote_template_not_found(url: &str) -> ProplateError {
+        Self::new(
+            ProplateErrorKind::TemplateNotFound,
+            &format!("Remote template (url={}) is not found.", url),
+        )
+    }
+
     pub fn prompt(details: &str) -> ProplateError {
         Self::new(ProplateErrorKind::PromptUser, details)
     }
