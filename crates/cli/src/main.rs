@@ -24,7 +24,7 @@ Any Project starter in one tool"#,
             Command::new("create")
                 .about("create project from template")
                 .args(&[
-                    arg!(--template <template> "Template location to start from (id or github repo url)").required(true),
+                    arg!(--template <template> "Template location to start from (dir or github repo url)").required(true),
                     arg!(--dest <dest> "Destination path").required(true),
                     arg!(--git  "Initialize git repo"),
                 ]),

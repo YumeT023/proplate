@@ -33,10 +33,10 @@ impl ProplateError {
         Self::new(ProplateErrorKind::Fs, details)
     }
 
-    pub fn local_template_not_found(id: &str) -> ProplateError {
+    pub fn local_template_not_found(path: &str) -> ProplateError {
         Self::new(
             ProplateErrorKind::TemplateNotFound,
-            &format!("Local template (id={}) is not found.", id),
+            &format!("Local template (dir={}) is not found.", path),
         )
     }
 
