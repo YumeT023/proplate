@@ -62,24 +62,24 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
         Err(e) => panic!("{}", e.print_err()),
     };
 
-    if template.fork_source.is_none() {
-        let path_str = format!(".temp/{}-{}", dest, Uuid::new_v4());
-        let path_buf = PathBuf::from(path_str);
-
-        fs::create_dir_all(&path_buf)
-            .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
-
-        println!("{}", logger::step("Forking template..."));
-        pfs::copy_directory(&template.base_path, path_buf.as_path())
-            .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
-
-        template.base_path = path_buf;
-    } else {
+    if template.fork_source.is_some() {
         println!(
             "{}",
             logger::step(&format!("Cloned template repo: {}", from))
-        )
+        );
+        return Ok(template);
     }
+
+    let path_str = format!(".temp/{}-{}", dest, Uuid::new_v4());
+    let path_buf = PathBuf::from(path_str);
+
+    fs::create_dir_all(&path_buf).map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+
+    println!("{}", logger::step("Forking template..."));
+    pfs::copy_directory(&template.base_path, path_buf.as_path())
+        .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+
+    template.base_path = path_buf;
 
     Ok(template)
 }
