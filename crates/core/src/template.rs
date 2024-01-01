@@ -2,7 +2,12 @@ use std::{ffi::OsString, fmt::Display, path::PathBuf};
 
 use proplate_tui::logger;
 
-use super::conf::{get_template_conf, TemplateConf};
+use self::config::{get_template_conf, TemplateConf};
+
+pub mod config;
+pub mod inquirer;
+pub mod interpolation;
+pub mod resolver;
 
 #[derive(Debug)]
 pub struct Template {

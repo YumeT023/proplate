@@ -9,10 +9,10 @@ use uuid::Uuid;
 use proplate_core::{
     fs as pfs,
     template::{
-        conf::inquire_adapter::AskUser,
+        inquirer::Input,
         interpolation::provide_ctx,
         resolver::find_template,
-        types::{Template, META_CONF},
+        {Template, META_CONF},
     },
 };
 use proplate_errors::{ProplateError, ProplateResult};
@@ -92,7 +92,7 @@ fn initialize_template(template: &Template) -> ProplateResult<()> {
         .conf
         .args
         .iter()
-        .map(|arg| AskUser::from(arg))
+        .map(|arg| Input::from(arg))
         .for_each(|q| {
             ctx.insert(q.arg().key.to_string(), q.prompt());
         });
