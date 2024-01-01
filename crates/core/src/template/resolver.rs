@@ -8,16 +8,18 @@ use uuid::Uuid;
 use proplate_errors::{ProplateError, ProplateResult};
 use proplate_integration::git;
 
-use super::types::Template;
+use super::Template;
 
+/// Attemps to find a template at the given location
+/// It can be either a local path or a github repo url
 pub fn find_template(location: &str) -> ProplateResult<Template> {
     match is_remote_loc(location) {
         true => clone_git_template(location),
-        false => get_local_template(location),
+        false => find_local_template(location),
     }
 }
 
-fn get_local_template(dir: &str) -> ProplateResult<Template> {
+fn find_local_template(dir: &str) -> ProplateResult<Template> {
     let path = Path::new(dir);
     if !path.exists() {
         return Err(ProplateError::local_template_not_found(dir));
@@ -36,6 +38,8 @@ fn clone_git_template(url: &str) -> ProplateResult<Template> {
         .map_err(|e| ProplateError::fs(&e.to_string()))
 }
 
+// TODO: move to Template struct
+/// Create a template representation based on the provided meta
 fn explore_meta(path: PathBuf, id: &str, source: Option<String>) -> Result<Template, Error> {
     let file_list = read_dir(&path)?
         .into_iter()

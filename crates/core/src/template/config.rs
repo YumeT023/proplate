@@ -1,13 +1,10 @@
+use serde::{Deserialize, Serialize};
 use std::{fs, path::PathBuf};
 
-use serde::{Deserialize, Serialize};
-
-use super::types::META_CONF;
 use proplate_errors::ProplateError;
-
 use proplate_tui::logger::{self, AsError};
 
-pub mod inquire_adapter;
+use super::META_CONF;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JSONArgType {
