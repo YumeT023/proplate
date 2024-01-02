@@ -4,7 +4,7 @@ use std::{fs, path::PathBuf};
 use proplate_errors::ProplateError;
 use proplate_tui::logger::{self, AsError};
 
-use super::META_CONF;
+use super::{conditional::ConditionalOperation, META_CONF};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JSONArgType {
@@ -31,6 +31,7 @@ pub struct TemplateConf {
   /// List of files containing dynamic variables
   /// used by Proplate to prevent having to go through every template file
   pub dynamic_files: Option<Vec<String>>,
+  pub conditional_operations: Option<Vec<ConditionalOperation>>,
 }
 
 pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {

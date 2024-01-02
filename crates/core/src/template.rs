@@ -4,6 +4,7 @@ use proplate_tui::logger;
 
 use self::config::{get_template_conf, TemplateConf};
 
+pub mod conditional;
 pub mod config;
 pub mod inquirer;
 pub mod interpolation;
