@@ -7,9 +7,10 @@ use std::{
 use uuid::Uuid;
 
 use proplate_core::{
-  fs as pfs,
+  fs::{self as pfs},
   template::{
     condition::Execute,
+    config::TemplateConf,
     inquirer::Input,
     interpolation::MapWithCtx,
     resolver::find_template,
@@ -28,7 +29,10 @@ pub struct CreateOptions {
 /// Creates project boilerplate
 pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
   println!("{}", logger::title("Setup template"));
-  let fork = fork_template(source, dest)?;
+  let mut fork = fork_template(source, dest)?;
+
+  // normalizes user-defined paths from conf
+  Template::normalize_template(&mut fork);
 
   // remove temporary files
   // should be called if any op fails and can't be recovered
@@ -93,6 +97,11 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
 
 fn process_template(template: &Template) -> ProplateResult<()> {
   let mut ctx: HashMap<String, String> = HashMap::new();
+  let TemplateConf {
+    conditional_operations,
+    dynamic_files,
+    ..
+  } = &template.conf;
 
   println!("{}", logger::title("Template initialization:"));
   template
@@ -104,33 +113,30 @@ fn process_template(template: &Template) -> ProplateResult<()> {
       ctx.insert(q.get_attr().name.clone(), q.prompt());
     });
 
-  let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();
-
   println!("{}", logger::step("replacing vars in dynamic files..."));
   // TODO: Go through template files if dynamic_files isn't defined
-  for file_path in dynamic_files {
-    println!(
-      "      {}",
-      logger::step(&format!("processing {}", &file_path))
-    );
-    let relative_path = template.base_path.join(file_path);
-    pfs::map_file(Path::new(&relative_path), |s| {
-      s.to_string().map_with_ctx(Some(ctx.clone()))
-    })
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+  if let Some(dynamic_files) = dynamic_files {
+    for file_path in dynamic_files {
+      println!("      {}", logger::step(&format!("processing...")));
+      pfs::map_file(Path::new(&file_path), |s| {
+        s.to_string().map_with_ctx(Some(ctx.clone()))
+      })
+      .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+    }
+  }
+
+  // conditional ops
+  println!("{}", logger::step("Executing hooks..."));
+  if let Some(ops) = conditional_operations {
+    for op in ops {
+      op.execute(ctx.clone())?;
+    }
   }
 
   println!("{}", logger::step("Deleting unused files..."));
   fs::remove_file(template.base_path.join(META_CONF))
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
-  // conditional ops
-  println!("{}", logger::step("executing hooks"));
-  if let Some(ops) = &template.conf.conditional_operations {
-    for op in ops {
-      op.execute(ctx.clone())?;
-    }
-  }
   Ok(())
 }
 

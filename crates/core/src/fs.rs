@@ -1,10 +1,10 @@
 use std::{
   fs,
-  io::{self, Error, ErrorKind},
-  path::{Path, PathBuf},
+  io::{Error, ErrorKind},
+  path::Path,
 };
 
-pub fn copy_directory(src: &Path, dst: &Path) -> Result<(), Error> {
+pub fn copy_directory(src: &Path, dest: &Path) -> std::io::Result<()> {
   for entry in fs::read_dir(src)? {
     let entry = entry?;
     let path = entry.path();
@@ -14,15 +14,18 @@ pub fn copy_directory(src: &Path, dst: &Path) -> Result<(), Error> {
         "File does not have a valid filename",
       )
     })?;
-    let dst_path = dst.join(file_name);
+    let dest_path = dest.join(file_name);
     if path.is_dir() {
-      fs::create_dir(&dst_path)?;
-      copy_directory(&path, &dst_path)?;
+      fs::create_dir(&dest_path)?;
+      copy_directory(&path, &dest_path)?;
     } else {
-      fs::copy(&path, &dst_path)?;
+      fs::copy(&path, &dest_path)?;
     }
   }
   Ok(())
+}
+
+pub fn copy_file(src: &Path, dest: &Path) -> std::io::Result<()> {
 }
 
 /// Updates the provided file content
@@ -31,11 +34,13 @@ pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> Result<(), Error> {
   fs::write(path, f(&content))
 }
 
-pub fn canonic_path_from_str_vec(strings: Vec<String>) -> io::Result<std::path::PathBuf> {
-  strings
-    .iter()
-    .map(|e| PathBuf::from(e))
-    .reduce(|acc, p| acc.join(p))
-    .expect("join str as path")
-    .canonicalize()
+#[macro_export]
+macro_rules! join_path {
+  ($($path:expr),*) => ({
+    let mut buf = PathBuf::new();
+    $(
+      buf.push($path);
+    )*
+    buf.canonicalize().unwrap_or(buf)
+  })
 }

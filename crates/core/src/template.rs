@@ -2,7 +2,7 @@ use std::{fmt::Display, path::PathBuf};
 
 use proplate_tui::logger;
 
-use crate::fs::canonic_path_from_str_vec;
+use crate::join_path;
 
 use self::{
   condition::Operation,
@@ -45,20 +45,18 @@ impl Template {
     fork_source: Option<String>,
   ) -> Template {
     Template::validate_template_filebase(&base_file_list);
-    let mut template = Template {
+    Template {
       id,
       base_path: base_path.clone(),
       base_file_list,
       fork_source,
       conf: get_template_conf(base_path),
-    };
-    Self::normalize_template(&mut template);
-    template
+    }
   }
 
   /// Prettifies template
   /// write present path to its canonical form
-  fn normalize_template(template: &mut Template) {
+  pub fn normalize_template(template: &mut Template) {
     Self::_normalize_conditional_operations(template);
     Self::_normalize_dynamic_files(template);
   }
@@ -81,20 +79,20 @@ impl Template {
   /// Normalizes the paths in conditional_operations
   fn _normalize_conditional_operations(template: &mut Template) {
     let config = &mut template.conf;
-    let base_path = template.base_path.to_str().unwrap().to_string();
+    let base_path = PathBuf::from(template.base_path.to_str().unwrap());
     if let Some(conditional_ops) = &mut config.conditional_operations {
       for ops in conditional_ops {
         for op in &mut ops.operations {
           match op {
             Operation::Copy { files, dest } => {
-              *dest = canonic_path_from_str_vec(vec![base_path.clone(), dest.to_string()])
+              *dest = join_path!(base_path.clone(), &dest)
+                .to_str()
                 .unwrap()
-                .to_string_lossy()
                 .to_string();
               for file in files {
-                *file = canonic_path_from_str_vec(vec![base_path.clone(), file.to_string()])
+                *file = join_path!(base_path.clone(), &file)
+                  .to_str()
                   .unwrap()
-                  .to_string_lossy()
                   .to_string();
               }
             }
