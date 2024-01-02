@@ -47,7 +47,7 @@ fn explore_meta(path: PathBuf, id: &str, source: Option<String>) -> Result<Templ
   let file_list = read_dir(&path)?
     .into_iter()
     .filter_map(|e| match e {
-      Ok(entry) => Some(entry.file_name()),
+      Ok(entry) => entry.file_name().to_str().map(|s| s.to_string()).or(None),
       _ => None,
     })
     .collect::<Vec<_>>();
