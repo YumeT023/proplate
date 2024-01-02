@@ -42,7 +42,7 @@ impl Condition {
     let mut c = self.clone();
     c.lhs = c.lhs.map_with_ctx(Some(ctx.clone()));
     c.rhs = c.rhs.map_with_ctx(Some(ctx));
-    self.eval()
+    c.eval()
   }
 }
 
