@@ -100,7 +100,7 @@ fn process_template(template: &Template) -> ProplateResult<()> {
     .iter()
     .map(|arg| Input::from(arg))
     .for_each(|q| {
-      ctx.insert(q.arg().key.to_string(), q.prompt());
+      ctx.insert(q.get_attr().name.clone(), q.prompt());
     });
 
   let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();

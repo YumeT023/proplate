@@ -17,7 +17,7 @@ pub struct JSONArg {
   pub key: String,
   pub q_type: JSONArgType,
   pub label: String,
-  pub is_required: Option<bool>,
+  pub default_value: Option<String>,
   /// Only used when "key" equals "Select."
   pub options: Option<Vec<String>>,
 }
