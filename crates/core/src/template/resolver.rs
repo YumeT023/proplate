@@ -30,10 +30,13 @@ fn find_local_template(dir: &str) -> ProplateResult<Template> {
 
 fn clone_git_template(url: &str) -> ProplateResult<Template> {
   let path = url.strip_prefix("https://github.com/").unwrap();
+  // make unique id
   let id = path.split("/").collect::<Vec<_>>().join("-");
   let path = format!(".temp/{}-{}", id, Uuid::new_v4());
+
   git::exec_cmd(["clone", url, &path], &current_dir().unwrap())
     .map_err(|_| ProplateError::remote_template_not_found(url))?;
+
   explore_meta(path.try_into().unwrap(), &id, Some(url.to_string()))
     .map_err(|e| ProplateError::fs(&e.to_string()))
 }
