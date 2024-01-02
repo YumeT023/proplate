@@ -13,9 +13,9 @@ pub enum StringCompareOp {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Condition {
-  lhs: String,
-  op: StringCompareOp,
-  rhs: String,
+  pub lhs: String,
+  pub op: StringCompareOp,
+  pub rhs: String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -25,9 +25,9 @@ pub enum Operation {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ConditionalOperation {
-  conditions: Vec<Condition>,
+  pub conditions: Vec<Condition>,
   /// operations to execute if the above conditions are evaluated as true
-  operations: Vec<Operation>,
+  pub operations: Vec<Operation>,
 }
 
 impl Condition {
