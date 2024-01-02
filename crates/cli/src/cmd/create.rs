@@ -9,8 +9,9 @@ use uuid::Uuid;
 use proplate_core::{
   fs as pfs,
   template::{
+    condition::Execute,
     inquirer::Input,
-    interpolation::provide_ctx,
+    interpolation::MapWithCtx,
     resolver::find_template,
     {Template, META_CONF},
   },
@@ -113,8 +114,8 @@ fn process_template(template: &Template) -> ProplateResult<()> {
       logger::step(&format!("processing {}", &file_path))
     );
     let relative_path = template.base_path.join(file_path);
-    pfs::map_file(Path::new(&relative_path), |c| {
-      provide_ctx(c, Some(ctx.clone()))
+    pfs::map_file(Path::new(&relative_path), |s| {
+      s.to_string().map_with_ctx(Some(ctx.clone()))
     })
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
   }
@@ -123,6 +124,13 @@ fn process_template(template: &Template) -> ProplateResult<()> {
   fs::remove_file(template.base_path.join(META_CONF))
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
 
+  // conditional ops
+  println!("{}", logger::step("executing hooks"));
+  if let Some(ops) = &template.conf.conditional_operations {
+    for op in ops {
+      op.execute(ctx.clone())?;
+    }
+  }
   Ok(())
 }
 
