@@ -15,7 +15,7 @@ fn create_regex() -> Regex {
 /// ctx.insert("name".to_string(), "proplate".to_string());
 /// println!("{}", provide_ctx("Hello $name", Some(ctx))) // "Hello proplate"
 /// ````
-pub fn provide_ctx(source: &str, ctx: Option<HashMap<String, String>>) -> String {
+fn provide_ctx(source: &str, ctx: Option<HashMap<String, String>>) -> String {
   let ctx = ctx.unwrap_or_default();
   let re = create_regex();
 
@@ -47,4 +47,14 @@ pub fn provide_ctx(source: &str, ctx: Option<HashMap<String, String>>) -> String
 
   result.push_str(&source[last_end..]);
   result
+}
+
+pub trait MapWithCtx {
+  fn map_with_ctx(&self, ctx: Option<HashMap<String, String>>) -> Self;
+}
+
+impl MapWithCtx for String {
+  fn map_with_ctx(&self, ctx: Option<HashMap<String, String>>) -> Self {
+    provide_ctx(self, ctx)
+  }
 }

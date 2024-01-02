@@ -4,7 +4,7 @@ use std::{fs, path::PathBuf};
 use proplate_errors::ProplateError;
 use proplate_tui::logger::{self, AsError};
 
-use super::{conditional::ConditionalOperation, META_CONF};
+use super::{condition::ConditionalOperation, META_CONF};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JSONArgType {
