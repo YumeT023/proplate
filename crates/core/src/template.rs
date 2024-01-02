@@ -1,4 +1,4 @@
-use std::{ffi::OsString, fmt::Display, path::PathBuf};
+use std::{fmt::Display, path::PathBuf};
 
 use proplate_tui::logger;
 
@@ -14,7 +14,7 @@ pub struct Template {
   pub id: String,
   /// Template path, which may be either the forked or local template path
   pub base_path: PathBuf,
-  pub base_file_list: Vec<OsString>,
+  pub base_file_list: Vec<String>,
   /// Github repo if he template is from github
   pub fork_source: Option<String>,
   pub conf: TemplateConf,
@@ -35,7 +35,7 @@ impl Template {
   pub fn build(
     id: String,
     base_path: PathBuf,
-    base_file_list: Vec<OsString>,
+    base_file_list: Vec<String>,
     fork_source: Option<String>,
   ) -> Template {
     Template::validate_filelist(&base_file_list);
@@ -48,10 +48,10 @@ impl Template {
     }
   }
 
-  fn validate_filelist(filelist: &Vec<OsString>) {
+  fn validate_filelist(filelist: &Vec<String>) {
     let mut violations = Vec::<String>::new();
 
-    if !filelist.contains(&OsString::from(META_CONF)) {
+    if !filelist.contains(&META_CONF.to_string()) {
       violations.push(String::from("No `meta_json` conf file"));
     }
 
