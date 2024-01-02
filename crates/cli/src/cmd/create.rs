@@ -24,20 +24,25 @@ pub struct CreateOptions {
   pub git: bool,
 }
 
-pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
+/// Creates project boilerplate
+pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
   println!("{}", logger::title("Setup template"));
-  let fork = fork_template(from, dest)?;
+  let fork = fork_template(source, dest)?;
 
+  // remove temporary files
+  // should be called if any op fails and can't be recovered
   let cleanup = || {
     println!("{}", logger::step("cleaning up..."));
     fs::remove_dir_all(&fork.base_path)
       .expect(&ProplateError::fs("unable to cleanup tmp...").print_err())
   };
 
-  initialize_template(&fork)?;
+  process_template(&fork)?;
 
+  // TODO: remove lockfile if "git" is set to false
   options.git.then(|| init_git_repo(&fork.base_path));
 
+  // prepare "dest" folder
   fs::create_dir_all(dest).map_err(|e| {
     cleanup();
     ProplateError::fs(&format!("{}", e.to_string()))
@@ -45,6 +50,7 @@ pub fn create(from: &str, dest: &str, options: CreateOptions) -> ProplateResult<
 
   println!("{}", logger::title("Finalizing"));
   println!("{}", logger::step("Copying..."));
+
   pfs::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
     cleanup();
     ProplateError::fs(&format!("{}", e.to_string()))
@@ -84,7 +90,7 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   Ok(template)
 }
 
-fn initialize_template(template: &Template) -> ProplateResult<()> {
+fn process_template(template: &Template) -> ProplateResult<()> {
   let mut ctx: HashMap<String, String> = HashMap::new();
 
   println!("{}", logger::title("Template initialization:"));
@@ -100,6 +106,7 @@ fn initialize_template(template: &Template) -> ProplateResult<()> {
   let dynamic_files = template.conf.dynamic_files.clone().unwrap_or_default();
 
   println!("{}", logger::step("replacing vars in dynamic files..."));
+  // TODO: Go through template files if dynamic_files isn't defined
   for file_path in dynamic_files {
     println!(
       "      {}",
@@ -123,11 +130,11 @@ fn init_git_repo(path: &Path) -> ProplateResult<()> {
   let lockfile = path.join(".git");
 
   if lockfile.exists() {
-    let init_anyway =
+    let reinitialize =
       Confirm::new("Git is already initialized in the template, Do you want to reinitialize ?")
         .prompt()
         .map_err(|e| ProplateError::prompt(&e.to_string()))?;
-    if !init_anyway {
+    if !reinitialize {
       return Ok(());
     }
     fs::remove_dir_all(lockfile).map_err(|e| ProplateError::fs(&e.to_string()))?
