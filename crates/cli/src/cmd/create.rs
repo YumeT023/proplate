@@ -39,7 +39,10 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
       .expect(&ProplateError::fs("unable to cleanup tmp...", vec![&fork.base_path]).print_err())
   };
 
-  process_template(&fork)?;
+  process_template(&fork).map_err(|e| {
+    cleanup();
+    e
+  })?;
 
   // TODO: remove lockfile if "git" is set to false
   options.git.then(|| init_git_repo(&fork.base_path));
@@ -61,7 +64,7 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
       dest,
       fork
         .conf
-        .ignore
+        .exclude
         .map(|vec| vec.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>()),
     )
   }

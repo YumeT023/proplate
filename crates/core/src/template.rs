@@ -59,13 +59,13 @@ impl Template {
   pub fn normalize_template(template: &mut Template) {
     Self::_normalize_conditional_operations(template);
     Self::_normalize_dynamic_files(template);
-    Self::_normalize_ignore_files(template);
+    Self::_normalize_exclude_files(template);
   }
 
-  fn _normalize_ignore_files(template: &mut Template) {
+  fn _normalize_exclude_files(template: &mut Template) {
     let config = &mut template.conf;
-    if let Some(ignore) = &mut config.ignore {
-      for file in ignore {
+    if let Some(exclude) = &mut config.exclude {
+      for file in exclude {
         *file = template
           .base_path
           .join(PathBuf::from(file.as_str()))
@@ -81,9 +81,7 @@ impl Template {
     let config = &mut template.conf;
     if let Some(dynamic_files) = &mut config.dynamic_files {
       for file in dynamic_files {
-        *file = template
-          .base_path
-          .join(PathBuf::from(file.as_str()))
+        *file = join_path!(&template.base_path, &file)
           .to_str()
           .map(|s| s.to_string())
           .unwrap();

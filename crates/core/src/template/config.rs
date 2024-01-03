@@ -29,7 +29,7 @@ pub struct TemplateConf {
   /// Auxiliary proplate utils
   /// for example, a "License" file that is only copied if the "License" arg is set to "MIT"
   #[serde(default = "default_proplate_aux_utils")]
-  pub ignore: Option<Vec<String>>,
+  pub exclude: Option<Vec<String>>,
   /// Arguments that Proplate will ask when a project is created using the associated template
   pub args: Vec<JSONArg>,
   /// List of files containing dynamic variables
