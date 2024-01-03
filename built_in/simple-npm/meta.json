@@ -16,6 +16,12 @@
       "q_type": "Select",
       "label": "Import module",
       "options": ["commonjs", "module"]
+    },
+    {
+      "key": "license",
+      "q_type": "Select",
+      "label": "Select project license",
+      "options": ["MIT", "Unlicensed"]
     }
   ],
   "dynamic_files": [
@@ -26,16 +32,16 @@
     {
       "conditions": [
         {
-          "lhs": "$module_type",
+          "lhs": "$license",
           "op": "Eq",
-          "rhs": "commonjs"
+          "rhs": "MIT"
         }
       ],
       "operations": [
         {
           "Copy": {
-            "files": ["./meta.json"],
-            "dest": "./hook/meta.json"
+            "files": [".proplate_aux_utils/LICENSE"],
+            "dest": "LICENSE"
           }
         }
       ]

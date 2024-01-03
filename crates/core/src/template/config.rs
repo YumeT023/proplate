@@ -26,6 +26,10 @@ pub struct JSONArg {
 pub struct TemplateConf {
   /// Template id
   pub id: String,
+  /// Auxiliary proplate utils
+  /// for example, a "License" file that is only copied if the "License" arg is set to "MIT"
+  #[serde(default = "default_proplate_aux_utils")]
+  pub ignore: Option<Vec<String>>,
   /// Arguments that Proplate will ask when a project is created using the associated template
   pub args: Vec<JSONArg>,
   /// List of files containing dynamic variables
@@ -45,4 +49,8 @@ pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {
       ProplateError::invalid_template_conf(&e.to_string()).print_err()
     ),
   }
+}
+
+fn default_proplate_aux_utils() -> Option<Vec<String>> {
+  Some(vec![".proplate_aux_utils".into(), META_CONF.to_string()])
 }

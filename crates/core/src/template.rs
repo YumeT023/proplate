@@ -59,6 +59,21 @@ impl Template {
   pub fn normalize_template(template: &mut Template) {
     Self::_normalize_conditional_operations(template);
     Self::_normalize_dynamic_files(template);
+    Self::_normalize_ignore_files(template);
+  }
+
+  fn _normalize_ignore_files(template: &mut Template) {
+    let config = &mut template.conf;
+    if let Some(ignore) = &mut config.ignore {
+      for file in ignore {
+        *file = template
+          .base_path
+          .join(PathBuf::from(file.as_str()))
+          .to_str()
+          .map(|s| s.to_string())
+          .unwrap();
+      }
+    }
   }
 
   /// Normalizes the paths in dynamic_files

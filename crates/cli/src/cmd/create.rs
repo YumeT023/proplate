@@ -10,12 +10,8 @@ use proplate_core::{
   fs::{self as pfs},
   join_path,
   template::{
-    condition::Execute,
-    config::TemplateConf,
-    inquirer::Input,
-    interpolation::MapWithCtx,
-    resolver::find_template,
-    {Template, META_CONF},
+    condition::Execute, config::TemplateConf, inquirer::Input, interpolation::MapWithCtx,
+    resolver::find_template, Template,
   },
 };
 use proplate_errors::{ProplateError, ProplateResult};
@@ -57,7 +53,19 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
   println!("{}", logger::title("Finalizing"));
   println!("{}", logger::step("Copying..."));
 
-  pfs::copy_fdir(&fork.base_path, Path::new(dest)).map_err(|e| {
+  {
+    let src: &Path = &fork.base_path;
+    let dest = Path::new(dest);
+    pfs::copy_fdir(
+      src,
+      dest,
+      fork
+        .conf
+        .ignore
+        .map(|vec| vec.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>()),
+    )
+  }
+  .map_err(|e| {
     cleanup();
     ProplateError::fs(
       &format!("{}", e.to_string()),
@@ -94,7 +102,12 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   })?;
 
   println!("{}", logger::step("Forking template..."));
-  pfs::copy_fdir(&template.base_path, &pathbuf).map_err(|e| {
+  {
+    let src: &Path = &template.base_path;
+    let dest: &Path = &pathbuf;
+    pfs::copy_fdir(src, dest, None)
+  }
+  .map_err(|e| {
     ProplateError::fs(
       &format!("{}", e.to_string()),
       vec![&template.base_path, &pathbuf],
@@ -142,10 +155,6 @@ fn process_template(template: &Template) -> ProplateResult<()> {
       .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&file_path)]))?;
     }
   }
-
-  println!("{}", logger::step("Deleting unused files..."));
-  fs::remove_file(template.base_path.join(META_CONF))
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![&template.base_path]))?;
 
   Ok(())
 }

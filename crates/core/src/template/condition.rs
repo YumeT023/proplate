@@ -57,8 +57,12 @@ impl Execute for Operation {
       Operation::Copy { files, dest } => {
         for file in files {
           let (file, dest) = (Path::new(&file), Path::new(&dest));
-          pfs::copy_fdir(&file, &Path::new(dest))
-            .map_err(|e| ProplateError::fs(&e.to_string(), vec![&file, &dest]))?;
+          {
+            let src: &Path = &file;
+            let dest: &Path = &Path::new(dest);
+            pfs::copy_fdir(src, dest, None)
+          }
+          .map_err(|e| ProplateError::fs(&e.to_string(), vec![&file, &dest]))?;
         }
         Ok(())
       }

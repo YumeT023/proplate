@@ -1,11 +1,15 @@
 use std::{
   fs,
   io::{Error, ErrorKind},
-  path::Path,
+  path::{Path, PathBuf},
 };
 
 /// Copies file/dir recursively
-pub fn copy_fdir(src: &Path, dest: &Path) -> std::io::Result<()> {
+pub fn copy_fdir(src: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::io::Result<()> {
+  _copy_fdir(src, dest, &except.unwrap_or_default())
+}
+
+fn _copy_fdir(src: &Path, dest: &Path, except: &Vec<PathBuf>) -> std::io::Result<()> {
   if src.is_file() {
     // Create the destination directory if it doesn't exist
     if let Some(parent) = dest.parent() {
@@ -21,6 +25,11 @@ pub fn copy_fdir(src: &Path, dest: &Path) -> std::io::Result<()> {
   for entry in fs::read_dir(src)? {
     let entry = entry?;
     let path = entry.path();
+
+    if except.contains(&path) {
+      continue;
+    }
+
     let file_name = path.file_name().ok_or_else(|| {
       Error::new(
         ErrorKind::InvalidInput,
@@ -28,7 +37,7 @@ pub fn copy_fdir(src: &Path, dest: &Path) -> std::io::Result<()> {
       )
     })?;
     let dest_path = dest.join(file_name);
-    copy_fdir(&path, &dest_path)?;
+    _copy_fdir(&path, &dest_path, except)?;
   }
   Ok(())
 }
