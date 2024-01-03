@@ -28,7 +28,7 @@
     "index.js",
     "package.json"
   ],
-  "conditional_operations": [
+  "additional_operations": [
     {
       "conditions": [
         {
@@ -42,6 +42,21 @@
           "Copy": {
             "files": [".proplate_aux_utils/LICENSE"],
             "dest": "LICENSE"
+          }
+        },
+        {
+          "Remove": {
+            "files": ["UNLICENSED"]
+          }
+        }
+      ]
+    },
+    {
+      "operations": [
+        {
+          "Copy": {
+            "files": [".proplate_aux_utils/BUILD"],
+            "dest": "BUILD"
           }
         }
       ]
