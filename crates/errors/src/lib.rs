@@ -34,11 +34,10 @@ impl ProplateError {
   pub fn fs(details: &str, paths: Vec<&Path>) -> ProplateError {
     let paths = paths
       .iter()
-      .map(|p| format!("> \"{}\"", p.display().to_string()))
+      .map(|p| format!("\n> \"{}\"", p.display().to_string()))
       .collect::<Vec<_>>()
       .join("\n");
-    eprintln!("concerned paths:\n{}", paths);
-    Self::new(ProplateErrorKind::Fs, details)
+    Self::new(ProplateErrorKind::Fs, &format!("{} {}", details, paths))
   }
 
   pub fn local_template_not_found(path: &str) -> ProplateError {
