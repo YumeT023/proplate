@@ -1,9 +1,10 @@
-use std::{collections::HashMap, fs};
+use std::{collections::HashMap, path::Path};
 
 use proplate_errors::{ProplateError, ProplateResult};
 use serde::{Deserialize, Serialize};
 
 use super::interpolation::MapWithCtx;
+use crate::fs as pfs;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum StringCompareOp {
@@ -55,7 +56,9 @@ impl Execute for Operation {
     match self {
       Operation::Copy { files, dest } => {
         for file in files {
-          fs::copy(file, dest).map_err(|e| ProplateError::fs(&e.to_string()))?;
+          let (file, dest) = (Path::new(&file), Path::new(&dest));
+          pfs::copy_fdir(&file, &Path::new(dest))
+            .map_err(|e| ProplateError::fs(&e.to_string(), vec![&file, &dest]))?;
         }
         Ok(())
       }

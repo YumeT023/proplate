@@ -4,7 +4,20 @@ use std::{
   path::Path,
 };
 
-pub fn copy_directory(src: &Path, dest: &Path) -> std::io::Result<()> {
+/// Copies file/dir recursively
+pub fn copy_fdir(src: &Path, dest: &Path) -> std::io::Result<()> {
+  if src.is_file() {
+    // Create the destination directory if it doesn't exist
+    if let Some(parent) = dest.parent() {
+      fs::create_dir_all(&parent)?;
+    }
+    fs::copy(&src, &dest)?;
+    return Ok(());
+  }
+
+  // Create the destination directory if it doesn't exist
+  fs::create_dir_all(&dest)?;
+
   for entry in fs::read_dir(src)? {
     let entry = entry?;
     let path = entry.path();
@@ -15,21 +28,13 @@ pub fn copy_directory(src: &Path, dest: &Path) -> std::io::Result<()> {
       )
     })?;
     let dest_path = dest.join(file_name);
-    if path.is_dir() {
-      fs::create_dir(&dest_path)?;
-      copy_directory(&path, &dest_path)?;
-    } else {
-      fs::copy(&path, &dest_path)?;
-    }
+    copy_fdir(&path, &dest_path)?;
   }
   Ok(())
 }
 
-pub fn copy_file(src: &Path, dest: &Path) -> std::io::Result<()> {
-}
-
 /// Updates the provided file content
-pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> Result<(), Error> {
+pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> std::io::Result<()> {
   let content = fs::read_to_string(path)?;
   fs::write(path, f(&content))
 }

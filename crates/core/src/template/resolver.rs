@@ -42,8 +42,8 @@ fn clone_git_template(url: &str) -> ProplateResult<Template> {
   )
   .map_err(|_| ProplateError::remote_template_not_found(url))?;
 
-  explore_meta(path.try_into().unwrap(), &id, Some(url.to_string()))
-    .map_err(|e| ProplateError::fs(&e.to_string()))
+  explore_meta(path.clone().try_into().unwrap(), &id, Some(url.to_string()))
+    .map_err(|e| ProplateError::fs(&e.to_string(), vec![&path]))
 }
 
 // TODO: move to Template struct

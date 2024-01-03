@@ -8,6 +8,7 @@ use uuid::Uuid;
 
 use proplate_core::{
   fs::{self as pfs},
+  join_path,
   template::{
     condition::Execute,
     config::TemplateConf,
@@ -39,7 +40,7 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
   let cleanup = || {
     println!("{}", logger::step("cleaning up..."));
     fs::remove_dir_all(&fork.base_path)
-      .expect(&ProplateError::fs("unable to cleanup tmp...").print_err())
+      .expect(&ProplateError::fs("unable to cleanup tmp...", vec![&fork.base_path]).print_err())
   };
 
   process_template(&fork)?;
@@ -50,15 +51,18 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
   // prepare "dest" folder
   fs::create_dir_all(dest).map_err(|e| {
     cleanup();
-    ProplateError::fs(&format!("{}", e.to_string()))
+    ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)])
   })?;
 
   println!("{}", logger::title("Finalizing"));
   println!("{}", logger::step("Copying..."));
 
-  pfs::copy_directory(&fork.base_path, Path::new(dest)).map_err(|e| {
+  pfs::copy_fdir(&fork.base_path, Path::new(dest)).map_err(|e| {
     cleanup();
-    ProplateError::fs(&format!("{}", e.to_string()))
+    ProplateError::fs(
+      &format!("{}", e.to_string()),
+      vec![&fork.base_path, Path::new(&dest)],
+    )
   })?;
 
   cleanup();
@@ -81,16 +85,23 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
     return Ok(template);
   }
 
-  let path_str = format!(".temp/{}-{}", dest, Uuid::new_v4());
-  let path_buf = PathBuf::from(path_str);
-
-  fs::create_dir_all(&path_buf).map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+  let pathbuf = join_path!(".temp", format!("{}-{}", dest, Uuid::new_v4()));
+  fs::create_dir_all(&pathbuf).map_err(|e| {
+    ProplateError::fs(
+      &format!("{}", e.to_string()),
+      vec![&pathbuf, Path::new(&dest)],
+    )
+  })?;
 
   println!("{}", logger::step("Forking template..."));
-  pfs::copy_directory(&template.base_path, path_buf.as_path())
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+  pfs::copy_fdir(&template.base_path, &pathbuf).map_err(|e| {
+    ProplateError::fs(
+      &format!("{}", e.to_string()),
+      vec![&template.base_path, &pathbuf],
+    )
+  })?;
 
-  template.base_path = path_buf;
+  template.base_path = pathbuf;
 
   Ok(template)
 }
@@ -113,6 +124,13 @@ fn process_template(template: &Template) -> ProplateResult<()> {
       ctx.insert(q.get_attr().name.clone(), q.prompt());
     });
 
+  println!("{}", logger::step("Executing hooks..."));
+  if let Some(ops) = conditional_operations {
+    for op in ops {
+      op.execute(ctx.clone())?;
+    }
+  }
+
   println!("{}", logger::step("replacing vars in dynamic files..."));
   // TODO: Go through template files if dynamic_files isn't defined
   if let Some(dynamic_files) = dynamic_files {
@@ -121,21 +139,13 @@ fn process_template(template: &Template) -> ProplateResult<()> {
       pfs::map_file(Path::new(&file_path), |s| {
         s.to_string().map_with_ctx(Some(ctx.clone()))
       })
-      .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
-    }
-  }
-
-  // conditional ops
-  println!("{}", logger::step("Executing hooks..."));
-  if let Some(ops) = conditional_operations {
-    for op in ops {
-      op.execute(ctx.clone())?;
+      .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&file_path)]))?;
     }
   }
 
   println!("{}", logger::step("Deleting unused files..."));
   fs::remove_file(template.base_path.join(META_CONF))
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string())))?;
+    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![&template.base_path]))?;
 
   Ok(())
 }
@@ -151,7 +161,7 @@ fn init_git_repo(path: &Path) -> ProplateResult<()> {
     if !reinitialize {
       return Ok(());
     }
-    fs::remove_dir_all(lockfile).map_err(|e| ProplateError::fs(&e.to_string()))?
+    fs::remove_dir_all(&lockfile).map_err(|e| ProplateError::fs(&e.to_string(), vec![&lockfile]))?
   }
 
   println!("{}", logger::title("Initializing git repo"));

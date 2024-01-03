@@ -7,6 +7,11 @@
       "label": "Package name"
     },
     {
+      "key": "description",
+      "q_type": "Text",
+      "label": "Project description"
+    },
+    {
       "key": "module_type",
       "q_type": "Select",
       "label": "Import module",
@@ -16,5 +21,24 @@
   "dynamic_files": [
     "index.js",
     "package.json"
+  ],
+  "conditional_operations": [
+    {
+      "conditions": [
+        {
+          "lhs": "$module_type",
+          "op": "Eq",
+          "rhs": "commonjs"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "files": ["./meta.json"],
+            "dest": "./hook/meta.json"
+          }
+        }
+      ]
+    }
   ]
 }

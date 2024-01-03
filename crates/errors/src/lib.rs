@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use proplate_tui::logger;
 
 #[derive(Debug)]
@@ -29,7 +31,13 @@ impl ProplateError {
     Self::new(ProplateErrorKind::InvalidTemplate, details)
   }
 
-  pub fn fs(details: &str) -> ProplateError {
+  pub fn fs(details: &str, paths: Vec<&Path>) -> ProplateError {
+    let paths = paths
+      .iter()
+      .map(|p| format!("> \"{}\"", p.display().to_string()))
+      .collect::<Vec<_>>()
+      .join("\n");
+    eprintln!("concerned paths:\n{}", paths);
     Self::new(ProplateErrorKind::Fs, details)
   }
 
