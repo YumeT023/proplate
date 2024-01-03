@@ -5,14 +5,14 @@ use proplate_tui::logger;
 use crate::join_path;
 
 use self::{
-  conditional_op::Operation,
   config::{get_template_conf, TemplateConf},
+  op::Operation,
 };
 
-pub mod conditional_op;
 pub mod config;
 pub mod inquirer;
 pub mod interpolation;
+pub mod op;
 pub mod resolver;
 
 #[derive(Debug)]
@@ -93,7 +93,7 @@ impl Template {
   fn _normalize_conditional_operations(template: &mut Template) {
     let config = &mut template.conf;
     let base_path = PathBuf::from(template.base_path.to_str().unwrap());
-    if let Some(conditional_ops) = &mut config.conditional_operations {
+    if let Some(conditional_ops) = &mut config.additional_operations {
       for ops in conditional_ops {
         for op in &mut ops.operations {
           match op {
@@ -102,6 +102,14 @@ impl Template {
                 .to_str()
                 .unwrap()
                 .to_string();
+              for file in files {
+                *file = join_path!(base_path.clone(), &file)
+                  .to_str()
+                  .unwrap()
+                  .to_string();
+              }
+            }
+            Operation::Remove { files } => {
               for file in files {
                 *file = join_path!(base_path.clone(), &file)
                   .to_str()

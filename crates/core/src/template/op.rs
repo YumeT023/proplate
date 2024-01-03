@@ -22,11 +22,12 @@ pub struct Condition {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Operation {
   Copy { files: Vec<String>, dest: String },
+  Remove { files: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ConditionalOperation {
-  pub conditions: Vec<Condition>,
+pub struct AdditionalOperation {
+  pub conditions: Option<Vec<Condition>>,
   /// operations to execute if the above conditions are evaluated as true
   pub operations: Vec<Operation>,
 }
@@ -63,18 +64,31 @@ impl Execute for Operation {
         }
         Ok(())
       }
+      Operation::Remove { files } => {
+        for file in files {
+          let src = Path::new(&file);
+          pfs::remove_fdir(src).map_err(|e| ProplateError::fs(&e.to_string(), vec![&src]))?;
+        }
+        Ok(())
+      }
     }
   }
 }
 
-impl Execute for ConditionalOperation {
+impl Execute for AdditionalOperation {
   fn execute(&self, ctx: &HashMap<String, String>) -> ProplateResult<()> {
-    let true_ = self.conditions.iter().all(|c| c.eval_in_ctx(ctx));
+    // eval condition or execute op directly
+    let true_ = match &self.conditions {
+      Some(conditions) => conditions.iter().all(|c| c.eval_in_ctx(ctx)),
+      _ => true,
+    };
+
     if true_ {
       for operation in &self.operations {
         operation.execute(ctx)?;
       }
     }
+
     Ok(())
   }
 }
