@@ -7,14 +7,44 @@
       "label": "Package name"
     },
     {
+      "key": "description",
+      "q_type": "Text",
+      "label": "Project description"
+    },
+    {
       "key": "module_type",
       "q_type": "Select",
       "label": "Import module",
       "options": ["commonjs", "module"]
+    },
+    {
+      "key": "license",
+      "q_type": "Select",
+      "label": "Select project license",
+      "options": ["MIT", "Unlicensed"]
     }
   ],
   "dynamic_files": [
     "index.js",
     "package.json"
+  ],
+  "conditional_operations": [
+    {
+      "conditions": [
+        {
+          "lhs": "$license",
+          "op": "Eq",
+          "rhs": "MIT"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "files": [".proplate_aux_utils/LICENSE"],
+            "dest": "LICENSE"
+          }
+        }
+      ]
+    }
   ]
 }
