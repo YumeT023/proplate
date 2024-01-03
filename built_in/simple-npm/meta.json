@@ -43,6 +43,11 @@
             "files": [".proplate_aux_utils/LICENSE"],
             "dest": "LICENSE"
           }
+        },
+        {
+          "Remove": {
+            "files": ["UNLICENSED"]
+          }
         }
       ]
     }

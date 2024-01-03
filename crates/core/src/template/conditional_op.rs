@@ -22,6 +22,7 @@ pub struct Condition {
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Operation {
   Copy { files: Vec<String>, dest: String },
+  Remove { files: Vec<String> },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -60,6 +61,13 @@ impl Execute for Operation {
           let src = Path::new(&file);
           pfs::copy_fdir(src, dest, None)
             .map_err(|e| ProplateError::fs(&e.to_string(), vec![&src, &dest]))?;
+        }
+        Ok(())
+      }
+      Operation::Remove { files } => {
+        for file in files {
+          let src = Path::new(&file);
+          pfs::remove_fdir(src).map_err(|e| ProplateError::fs(&e.to_string(), vec![&src]))?;
         }
         Ok(())
       }

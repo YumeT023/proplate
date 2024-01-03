@@ -42,6 +42,21 @@ fn _copy_fdir(src: &Path, dest: &Path, except: &Vec<PathBuf>) -> std::io::Result
   Ok(())
 }
 
+// Remove file/dir recursively
+pub fn remove_fdir(path: &Path) -> std::io::Result<()> {
+  if !path.exists() {
+    return Ok(());
+  }
+
+  if path.is_file() {
+    fs::remove_file(path)?
+  } else {
+    fs::remove_dir_all(path)?
+  }
+
+  Ok(())
+}
+
 /// Updates the provided file content
 pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> std::io::Result<()> {
   let content = fs::read_to_string(path)?;

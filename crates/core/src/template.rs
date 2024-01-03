@@ -109,6 +109,14 @@ impl Template {
                   .to_string();
               }
             }
+            Operation::Remove { files } => {
+              for file in files {
+                *file = join_path!(base_path.clone(), &file)
+                  .to_str()
+                  .unwrap()
+                  .to_string();
+              }
+            }
           }
         }
       }
