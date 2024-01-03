@@ -10,7 +10,7 @@ use proplate_core::{
   fs::{self as pfs},
   join_path,
   template::{
-    conditional_op::Execute, config::TemplateConf, inquirer::Input, interpolation::MapWithCtx,
+    config::TemplateConf, inquirer::Input, interpolation::MapWithCtx, op::Execute,
     resolver::find_template, Template,
   },
 };
@@ -125,7 +125,7 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
 fn process_template(template: &Template) -> ProplateResult<()> {
   let mut ctx: HashMap<String, String> = HashMap::new();
   let TemplateConf {
-    conditional_operations,
+    additional_operations,
     dynamic_files,
     ..
   } = &template.conf;
@@ -141,7 +141,7 @@ fn process_template(template: &Template) -> ProplateResult<()> {
     });
 
   println!("{}", logger::step("Executing hooks..."));
-  if let Some(ops) = conditional_operations {
+  if let Some(ops) = &additional_operations {
     for op in ops {
       op.execute(&ctx)?;
     }
