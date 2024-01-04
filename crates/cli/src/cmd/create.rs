@@ -48,19 +48,20 @@ fn _create(
 ) -> ProplateResult<()> {
   normalize_template(fork);
   process_template(fork, ctx)?;
-
   prepare_dest(dest)?;
   copy_files(fork, dest)?;
   cleanup(fork)?;
   Ok(())
 }
 
+/// Create project dest dir
 fn prepare_dest(dest: &str) -> ProplateResult<()> {
   fs::create_dir_all(dest)
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)]))?;
   Ok(())
 }
 
+/// Create copy of a template in a tempdir
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   let mut template = find_template(from)?;
 
@@ -90,10 +91,12 @@ fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   Ok(template)
 }
 
+/// Canonicalizes paths under "meta.dynamic_files", "meta.additional_operations" and "meta.exclude"
 fn normalize_template(template: &mut Template) {
   Template::normalize_template(template);
 }
 
+/// Interactively prompts args under "meta.args"
 fn prompt_args(template: &Template) -> ProplateResult<Context> {
   let mut ctx = Context::new();
   let TemplateConf { args, .. } = &template.conf;
@@ -106,6 +109,7 @@ fn prompt_args(template: &Template) -> ProplateResult<Context> {
   Ok(ctx)
 }
 
+/// Executes hook and bind ctx onto dynamic_files.
 fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()> {
   let TemplateConf {
     additional_operations,
@@ -130,6 +134,7 @@ fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()
   Ok(())
 }
 
+/// Replaces dynamic var "$var" with their actual value
 fn bind_ctx_to_file(path: &Path, ctx: &Context) {
   match pfs::map_file(path, |s| s.to_string().map_with_ctx(ctx)) {
     Err(_) => {
@@ -139,6 +144,8 @@ fn bind_ctx_to_file(path: &Path, ctx: &Context) {
   }
 }
 
+/// Copies template file to the provided dest
+/// Files under "meta.exclude" won't be copied
 fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
   let src = &template.base_path;
   let dest = Path::new(dest);
