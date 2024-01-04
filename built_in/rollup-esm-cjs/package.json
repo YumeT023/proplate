@@ -1,0 +1,60 @@
+{
+  "name": "$project_name",
+  "version": "1.0.0",
+  "description": "$description",
+  "author": "yumii.saiko <yumii.saiko@gmail.com>",
+  "homepage": "https://github.com/YumeT023/$project_name#readme",
+  "license": "$license",
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/YumeT023/$project_name/issues",
+    "email": "yumii.saiko@gmail.com"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "jest": {
+    "testRegex": "(/test/.*?\\.(spec|test)\\.tsx?)$"
+  },
+  "module": "$out/index.mjs",
+  "main": "$out/index.cjs",
+  "types": "$out/index.d.ts",
+  "files": [
+    "$out",
+    "README.md",
+    "package.json"
+  ],
+  "scripts": {
+    "build": "yarn clean && rollup -c && yarn clean-dts",
+    "build-dts": "tsc -p tsconfig.build.json",
+    "clean": "rimraf $out",
+    "clean-dts": "rimraf $out/dts",
+    "lint": "eslint --ignore-path .eslintignore --ext .ts .",
+    "lint:fix": "yarn lint -- --fix",
+    "test": "jest",
+    "format": "prettier --ignore-path .gitignore --write \"src/**/*.{js,ts,tsx}\" \"./**/*.{json,yml,yaml}\""
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.22.4",
+    "@babel/preset-typescript": "^7.21.5",
+    "@babel/core": "^7.0.0",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-node-resolve": "^15.1.0",
+    "@rollup/plugin-typescript": "^11.1.1",
+    "@types/jest": "^29.5.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "eslint": "^8.40.0",
+    "eslint-config-prettier": "^8.8.0",
+    "jest": "^29.5.0",
+    "prettier": "^2.8.8",
+    "rimraf": "^5.0.1",
+    "rollup": "^3.23.1",
+    "rollup-plugin-dts": "^5.3.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "tslib": "^2.5.3"
+  }
+}

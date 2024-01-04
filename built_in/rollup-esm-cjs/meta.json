@@ -1,0 +1,84 @@
+{
+  "id": "ts_jest_experiment",
+  "args": [
+    {
+      "key": "project_name",
+      "q_type": "Text",
+      "label": "Project name"
+    },
+    {
+      "key": "description",
+      "q_type": "Text",
+      "label": "What is this project about"
+    },
+    {
+      "key": "license",
+      "q_type": "Select",
+      "label": "Open source license",
+      "options": ["MIT", "Unlicensed"]
+    },
+    {
+      "key": "out",
+      "q_type": "Text",
+      "label": "[TSC] out_dir (e.g: dist, build, out)"
+    },
+    {
+      "key": "target",
+      "q_type": "Select",
+      "label": "[TSC] target",
+      "options": [
+        "ES3",
+        "ES5",
+        "ES6",
+        "ES2015",
+        "ES2016",
+        "ES2017",
+        "ES2018",
+        "ES2019",
+        "ES2020",
+        "ES2021",
+        "ES2022",
+        "ES2023",
+        "ESNext"
+      ]
+    },
+    {
+      "key": "testing",
+      "q_type": "Select",
+      "label": "Any testing ?",
+      "options": ["jest", "none"]
+    }
+  ],
+  "dynamic_files": [
+    "package.json",
+    "tsconfig.json",
+    "src/test/sample.spec.ts",
+    "src/index.ts",
+    "README.md"
+  ],
+  "additional_operations": [
+    {
+      "conditions": [
+        {
+          "lhs": "$testing",
+          "op": "Eq",
+          "rhs": "none"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "files": [".proplate_aux_utils/nojest.package.json"],
+            "dest": "package.json"
+          }
+        },
+        {
+          "Remove": {
+            "files": ["src/test"]
+          }
+        }
+      ]
+    }
+  ],
+  "exclude": ["meta.json", ".proplate_aux_utils"]
+}
