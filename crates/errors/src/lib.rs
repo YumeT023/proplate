@@ -54,6 +54,13 @@ impl ProplateError {
     )
   }
 
+  pub fn template_loc_invalid(location: &str) -> ProplateError {
+    Self::new(
+      ProplateErrorKind::TemplateNotFound,
+      &format!("Invalid location {}", location),
+    )
+  }
+
   pub fn prompt(details: &str) -> ProplateError {
     Self::new(ProplateErrorKind::PromptUser, details)
   }
