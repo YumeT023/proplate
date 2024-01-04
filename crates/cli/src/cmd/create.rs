@@ -1,14 +1,12 @@
-use inquire::Confirm;
 use std::{
   collections::HashMap,
   fs,
   path::{Path, PathBuf},
 };
-use uuid::Uuid;
 
+use inquire::Confirm;
 use proplate_core::{
-  fs::{self as pfs},
-  join_path,
+  fs as pfs, join_path,
   template::{
     config::TemplateConf, inquirer::Input, interpolation::MapWithCtx, op::Execute,
     resolver::find_template, Template,
@@ -16,149 +14,149 @@ use proplate_core::{
 };
 use proplate_errors::{ProplateError, ProplateResult};
 use proplate_integration::git;
-use proplate_tui::logger::{self, AsError};
+use proplate_tui::logger;
+use uuid::Uuid;
 
 #[derive(Debug, Default)]
 pub struct CreateOptions {
   pub git: bool,
 }
 
-/// Creates project boilerplate
+type Context = HashMap<String, String>;
+
+/// Create project starter
+/// Entrypoint for cli
 pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
-  println!("{}", logger::title("Setup template"));
   let mut fork = fork_template(source, dest)?;
+  let ctx = prompt_args(&fork)?;
 
-  // normalizes user-defined paths from conf
-  Template::normalize_template(&mut fork);
-
-  // remove temporary files
-  // should be called if any op fails and can't be recovered
-  let cleanup = || {
-    println!("{}", logger::step("cleaning up..."));
-    fs::remove_dir_all(&fork.base_path)
-      .expect(&ProplateError::fs("unable to cleanup tmp...", vec![&fork.base_path]).print_err())
-  };
-
-  process_template(&fork).map_err(|e| {
-    cleanup();
-    e
-  })?;
-
-  // TODO: remove lockfile if "git" is set to false
-  options.git.then(|| init_git_repo(&fork.base_path));
-
-  // prepare "dest" folder
-  fs::create_dir_all(dest).map_err(|e| {
-    cleanup();
-    ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)])
-  })?;
-
-  println!("{}", logger::title("Finalizing"));
-  println!("{}", logger::step("Copying..."));
-
-  {
-    let src: &Path = &fork.base_path;
-    let dest = Path::new(dest);
-    pfs::copy_fdir(
-      src,
-      dest,
-      fork
-        .conf
-        .exclude
-        .map(|vec| vec.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>()),
-    )
+  if options.git {
+    init_git_repo(&fork.base_path)?
   }
-  .map_err(|e| {
-    cleanup();
-    ProplateError::fs(
-      &format!("{}", e.to_string()),
-      vec![&fork.base_path, Path::new(&dest)],
-    )
-  })?;
 
-  cleanup();
+  _create(&mut fork, dest, options, &ctx)?;
+  Ok(())
+}
 
+/// Create project starter
+/// impl details
+fn _create(
+  fork: &mut Template,
+  dest: &str,
+  _options: CreateOptions,
+  ctx: &Context,
+) -> ProplateResult<()> {
+  normalize_template(fork);
+  process_template(fork, ctx)?;
+
+  prepare_dest(dest)?;
+  copy_files(fork, dest)?;
+  cleanup(fork)?;
+  Ok(())
+}
+
+fn prepare_dest(dest: &str) -> ProplateResult<()> {
+  fs::create_dir_all(dest)
+    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)]))?;
   Ok(())
 }
 
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
-  println!("{}", logger::step("Finding template..."));
-  let mut template = match find_template(from) {
-    Ok(t) => t,
-    Err(e) => panic!("{}", e.print_err()),
-  };
+  let mut template = find_template(from)?;
 
+  // already cloned from 'github'
   if template.fork_source.is_some() {
-    println!(
-      "{}",
-      logger::step(&format!("Cloned template repo: {}", from))
-    );
     return Ok(template);
   }
 
-  let pathbuf = join_path!(".temp", format!("{}-{}", dest, Uuid::new_v4()));
-  fs::create_dir_all(&pathbuf).map_err(|e| {
+  // copy temp local
+  let forkpath = join_path!(".temp", format!("{}-{}", dest, Uuid::new_v4()));
+  fs::create_dir_all(&forkpath).map_err(|e| {
     ProplateError::fs(
       &format!("{}", e.to_string()),
-      vec![&pathbuf, Path::new(&dest)],
+      vec![&forkpath, Path::new(&dest)],
     )
   })?;
 
-  println!("{}", logger::step("Forking template..."));
-  {
-    let src: &Path = &template.base_path;
-    let dest: &Path = &pathbuf;
-    pfs::copy_fdir(src, dest, None)
-  }
-  .map_err(|e| {
+  pfs::copy_fdir(&template.base_path, &forkpath, None).map_err(|e| {
     ProplateError::fs(
       &format!("{}", e.to_string()),
-      vec![&template.base_path, &pathbuf],
+      vec![&template.base_path, &forkpath],
     )
   })?;
 
-  template.base_path = pathbuf;
-
+  // bind template mod to the temp path
+  template.base_path = forkpath;
   Ok(template)
 }
 
-fn process_template(template: &Template) -> ProplateResult<()> {
-  let mut ctx: HashMap<String, String> = HashMap::new();
+fn normalize_template(template: &mut Template) {
+  Template::normalize_template(template);
+}
+
+fn prompt_args(template: &Template) -> ProplateResult<Context> {
+  let mut ctx = Context::new();
+  let TemplateConf { args, .. } = &template.conf;
+
+  for arg in args {
+    let input = Input::from(arg);
+    ctx.insert(input.get_attr().name.clone(), input.prompt());
+  }
+
+  Ok(ctx)
+}
+
+fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()> {
   let TemplateConf {
     additional_operations,
     dynamic_files,
     ..
   } = &template.conf;
 
-  println!("{}", logger::title("Template initialization:"));
-  template
-    .conf
-    .args
-    .iter()
-    .map(|arg| Input::from(arg))
-    .for_each(|q| {
-      ctx.insert(q.get_attr().name.clone(), q.prompt());
-    });
-
-  println!("{}", logger::step("Executing hooks..."));
+  // run "additional_operations" in order to process the dynamically
+  // added file in the extra operation.
   if let Some(ops) = &additional_operations {
     for op in ops {
       op.execute(&ctx)?;
     }
   }
 
-  println!("{}", logger::step("replacing vars in dynamic files..."));
-  // TODO: Go through template files if dynamic_files isn't defined
   if let Some(dynamic_files) = dynamic_files {
-    for file_path in dynamic_files {
-      println!("      {}", logger::step(&format!("processing...")));
-      pfs::map_file(Path::new(&file_path), |s| s.to_string().map_with_ctx(&ctx)).map_err(|e| {
-        ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&file_path)])
-      })?;
+    for filepath in dynamic_files {
+      bind_ctx_to_file(Path::new(filepath), ctx);
     }
   }
 
   Ok(())
+}
+
+fn bind_ctx_to_file(path: &Path, ctx: &Context) {
+  match pfs::map_file(path, |s| s.to_string().map_with_ctx(ctx)) {
+    Err(_) => {
+      // TODO: warn if not found but wasn't removed in additional_op either
+    }
+    _ => (),
+  }
+}
+
+fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
+  let src = &template.base_path;
+  let dest = Path::new(dest);
+  pfs::copy_fdir(
+    src,
+    dest,
+    template
+      .conf
+      .exclude
+      .clone()
+      .map(|vec| vec.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>()),
+  )
+  .map_err(|e| {
+    ProplateError::fs(
+      &format!("{}", e.to_string()),
+      vec![&template.base_path, Path::new(&dest)],
+    )
+  })
 }
 
 fn init_git_repo(path: &Path) -> ProplateResult<()> {
@@ -172,9 +170,16 @@ fn init_git_repo(path: &Path) -> ProplateResult<()> {
     if !reinitialize {
       return Ok(());
     }
-    fs::remove_dir_all(&lockfile).map_err(|e| ProplateError::fs(&e.to_string(), vec![&lockfile]))?
+    fs::remove_dir_all(&lockfile)
+      .map_err(|e| ProplateError::fs(&e.to_string(), vec![&lockfile]))?;
   }
 
+  _init_git_repo(path)?;
+
+  Ok(())
+}
+
+fn _init_git_repo(path: &Path) -> ProplateResult<()> {
   println!("{}", logger::title("Initializing git repo"));
   git::exec_cmd(["init"], path)?;
   git::exec_cmd(["add", "-A"], path)?;
@@ -182,5 +187,11 @@ fn init_git_repo(path: &Path) -> ProplateResult<()> {
     ["commit", "-m", "chore: initial commit", "--allow-empty"],
     path,
   )?;
+  Ok(())
+}
+
+fn cleanup(fork: &Template) -> ProplateResult<()> {
+  fs::remove_dir_all(&fork.base_path)
+    .map_err(|_| ProplateError::fs("unable to cleanup tmp...", vec![&fork.base_path]))?;
   Ok(())
 }
