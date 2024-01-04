@@ -27,6 +27,7 @@ type Context = HashMap<String, String>;
 /// Create project starter
 /// Entrypoint for cli
 pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
+  println!("{}", logger::title("Setup template"));
   let mut fork = fork_template(source, dest)?;
   let ctx = prompt_args(&fork)?;
 
@@ -56,6 +57,7 @@ fn _create(
 
 /// Create project dest dir
 fn prepare_dest(dest: &str) -> ProplateResult<()> {
+  println!("{}", logger::title("Finalizing"));
   fs::create_dir_all(dest)
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)]))?;
   Ok(())
@@ -63,10 +65,16 @@ fn prepare_dest(dest: &str) -> ProplateResult<()> {
 
 /// Create copy of a template in a tempdir
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
+  println!("{}", logger::step("Finding template..."));
   let mut template = find_template(from)?;
 
   // already cloned from 'github'
   if template.fork_source.is_some() {
+    println!(
+      "{}",
+      logger::step(&format!("Cloned template repo: {}", from))
+    );
+
     return Ok(template);
   }
 
@@ -101,6 +109,8 @@ fn prompt_args(template: &Template) -> ProplateResult<Context> {
   let mut ctx = Context::new();
   let TemplateConf { args, .. } = &template.conf;
 
+  println!("{}", logger::title("Template initialization:"));
+
   for arg in args {
     let input = Input::from(arg);
     ctx.insert(input.get_attr().name.clone(), input.prompt());
@@ -117,6 +127,8 @@ fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()
     ..
   } = &template.conf;
 
+  println!("{}", logger::step("Running additional operations..."));
+
   // run "additional_operations" in order to process the dynamically
   // added file in the extra operation.
   if let Some(ops) = &additional_operations {
@@ -125,8 +137,11 @@ fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()
     }
   }
 
+  println!("{}", logger::step("Binding ctx to dynamic_files..."));
+
   if let Some(dynamic_files) = dynamic_files {
     for filepath in dynamic_files {
+      println!("      {}", logger::step(&format!("processing...")));
       bind_ctx_to_file(Path::new(filepath), ctx);
     }
   }
@@ -149,6 +164,9 @@ fn bind_ctx_to_file(path: &Path, ctx: &Context) {
 fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
   let src = &template.base_path;
   let dest = Path::new(dest);
+
+  println!("{}", logger::step("Copying..."));
+
   pfs::copy_fdir(
     src,
     dest,
@@ -198,6 +216,7 @@ fn _init_git_repo(path: &Path) -> ProplateResult<()> {
 }
 
 fn cleanup(fork: &Template) -> ProplateResult<()> {
+  println!("{}", logger::step("cleaning up..."));
   fs::remove_dir_all(&fork.base_path)
     .map_err(|_| ProplateError::fs("unable to cleanup tmp...", vec![&fork.base_path]))?;
   Ok(())
