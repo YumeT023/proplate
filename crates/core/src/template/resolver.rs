@@ -36,6 +36,7 @@ fn clone_git_template(url: &str) -> ProplateResult<Template> {
   let id = tail.split("/").collect::<Vec<_>>().join("-");
   let path = join_path!(".temp", format!("{}-{}", id, Uuid::new_v4()));
 
+  // TODO: shouldn't be done here
   git::exec_cmd(
     ["clone", url, path.to_str().unwrap()],
     &current_dir().unwrap(),
