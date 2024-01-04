@@ -6,16 +6,15 @@ use std::{
 
 use inquire::Confirm;
 use proplate_core::{
-  fs as pfs, join_path,
+  fs as pfs,
   template::{
     config::TemplateConf, inquirer::Input, interpolation::MapWithCtx, op::Execute,
-    resolver::find_template, Template,
+    resolver::clone_template, Template,
   },
 };
 use proplate_errors::{ProplateError, ProplateResult};
 use proplate_integration::git;
 use proplate_tui::logger;
-use uuid::Uuid;
 
 #[derive(Debug, Default)]
 pub struct CreateOptions {
@@ -66,37 +65,7 @@ fn prepare_dest(dest: &str) -> ProplateResult<()> {
 /// Create copy of a template in a tempdir
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   println!("{}", logger::step("Finding template..."));
-  let mut template = find_template(from)?;
-
-  // already cloned from 'github'
-  if template.fork_source.is_some() {
-    println!(
-      "{}",
-      logger::step(&format!("Cloned template repo: {}", from))
-    );
-
-    return Ok(template);
-  }
-
-  // copy temp local
-  let forkpath = join_path!(".temp", format!("{}-{}", dest, Uuid::new_v4()));
-  fs::create_dir_all(&forkpath).map_err(|e| {
-    ProplateError::fs(
-      &format!("{}", e.to_string()),
-      vec![&forkpath, Path::new(&dest)],
-    )
-  })?;
-
-  pfs::copy_fdir(&template.base_path, &forkpath, None).map_err(|e| {
-    ProplateError::fs(
-      &format!("{}", e.to_string()),
-      vec![&template.base_path, &forkpath],
-    )
-  })?;
-
-  // bind template mod to the temp path
-  template.base_path = forkpath;
-  Ok(template)
+  clone_template(from, dest)
 }
 
 /// Canonicalizes paths under "meta.dynamic_files", "meta.additional_operations" and "meta.exclude"
