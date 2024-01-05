@@ -66,13 +66,18 @@ jobs:
           at: .
 
       - run:
-          name: Fetch version
-          command: VERSION=$(awk '/^version =/ {print $3}' crates/cli/Cargo.toml  | head -n 1)
+          name: Check if commit message is 'release'-like
+          command: |
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+            if [[ "$COMMIT_MESSAGE" != *"release"* ]]; then
+              echo "No 'release' in commit message, skipping release."
+              exit 0
+            fi
 
       - run:
           name: Publish release
           command: |
-            VERSION=$(git describe --tags)
+            VERSION=$(git describe --tag)
             ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace $VERSION ./build
 
 workflows:
