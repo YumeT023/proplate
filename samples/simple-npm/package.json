@@ -1,7 +1,7 @@
 {
   "name": "$pkg_name",
   "version": "1.0.0",
-  "type": "$module_type",
+  "type": "$module",
   "license": "$license",
   "dependencies": {}
 }

@@ -12,16 +12,16 @@
       "label": "Project description"
     },
     {
-      "key": "module_type",
+      "key": "module_system",
       "q_type": "Select",
-      "label": "Import module",
+      "label": "Module system",
       "options": ["commonjs", "module"]
     },
     {
       "key": "license",
       "q_type": "Select",
       "label": "Select project license",
-      "options": ["MIT", "Unlicensed"]
+      "options": ["MIT", "UNLICENSED"]
     }
   ],
   "dynamic_files": [
@@ -40,23 +40,8 @@
       "operations": [
         {
           "Copy": {
-            "files": [".proplate_aux_utils/LICENSE"],
+            "files": [".proplate_aux_utils/MIT_LICENSE"],
             "dest": "LICENSE"
-          }
-        },
-        {
-          "Remove": {
-            "files": ["UNLICENSED"]
-          }
-        }
-      ]
-    },
-    {
-      "operations": [
-        {
-          "Copy": {
-            "files": [".proplate_aux_utils/BUILD"],
-            "dest": "BUILD"
           }
         }
       ]
