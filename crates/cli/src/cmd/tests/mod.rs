@@ -56,3 +56,26 @@ fn run_isolated_test(f: impl Fn() -> ProplateResult<()>, clean: bool) {
   }
   clean.then(|| cleanup_test_trash());
 }
+
+#[macro_export]
+macro_rules! assert_gen_snapshot {
+    ($snapshot: expr, $generated: expr, $($files: expr)+) => {
+      $({
+        let snap = fs::read_to_string($snapshot.join($files)).expect("read snap");
+        let gen = fs::read_to_string($generated.join($files)).expect("read gen");
+        assert_eq!( snap, gen );
+      })+;
+    };
+}
+
+/// Ensures the following
+/// - The project is generated
+/// - The generated has neither "meta.json" or ".proplate_aux_utils"
+#[macro_export]
+macro_rules! assert_gen_ok {
+  ($path: expr) => {
+    assert!($path.exists());
+    assert!(!$path.join(META_CONF).exists());
+    assert!(!$path.join(".proplate_aux_utils").exists());
+  };
+}
