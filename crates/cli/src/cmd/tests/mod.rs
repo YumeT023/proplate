@@ -4,9 +4,13 @@ use std::{
   process::Command,
 };
 
+use proplate_core::join_path;
 use proplate_errors::ProplateResult;
 use proplate_tui::logger::AsError;
 use uuid::Uuid;
+
+#[cfg(test)]
+mod create_test;
 
 fn workspace_dir() -> PathBuf {
   let output = Command::new(env!("CARGO"))
@@ -28,12 +32,17 @@ fn get_trash() -> PathBuf {
   get_path("test_trash")
 }
 
-fn get_sample(name: &str) -> PathBuf {
-  get_path("samples").join(name)
-}
-
-fn get_snapshot(name: &str) -> PathBuf {
-  get_path("samples/snapshot").join(name)
+fn get_sample(pkg: &str, name: &str) -> (PathBuf, PathBuf /*snapshot*/) {
+  let path = get_path(
+    join_path!("samples", pkg, name)
+      .display()
+      .to_string()
+      .as_str(),
+  );
+  (
+    path.clone(),
+    (path.display().to_string() + "-snapshot").into(),
+  )
 }
 
 /// New temporary dir (calling it trash cuz... !!)
@@ -78,4 +87,21 @@ macro_rules! assert_gen_ok {
     assert!(!$path.join(META_CONF).exists());
     assert!(!$path.join(".proplate_aux_utils").exists());
   };
+}
+
+/// Clones and creates template instance in trash_dir
+/// The reason it is a test utility is that, I suppose, you could not possibly know in advance the ctx that the template needs.
+#[macro_export]
+macro_rules! test_create {
+  ($pkg: expr, $name: expr, $ctx: expr) => {{
+    let (path, _uuid) = new_trash();
+    let dest = path.display().to_string();
+
+    let (t, snap) = get_sample($pkg, $name);
+
+    let mut fork = clone_template(t.display().to_string().as_str(), &dest)?;
+    create(&mut fork, &dest, CreateOptions::default(), &$ctx)?;
+
+    (path, snap)
+  }};
 }
