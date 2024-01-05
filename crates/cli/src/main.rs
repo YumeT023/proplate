@@ -1,5 +1,5 @@
 use clap::{arg, Command};
-use cmd::create::{create, CreateOptions};
+use cmd::create::{run_create, CreateOptions};
 
 mod cmd;
 
@@ -47,7 +47,7 @@ fn main() -> Result<(), clap::Error> {
           ..Default::default()
         };
 
-        create(template_id, dest, options).expect(
+        run_create(template_id, dest, options).expect(
           format!(
             "Unable to create boilerplate from Template [{}]",
             template_id
