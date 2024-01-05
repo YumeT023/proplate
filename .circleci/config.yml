@@ -1,0 +1,23 @@
+version: 2.1
+executors:
+  rust-executor:
+    docker:
+      - image: cimg/rust:1.75.0
+jobs:
+  style:
+    executor: rust-executor
+    steps:
+      - checkout
+      - run: cargo fmt --check
+
+  tests:
+    executor: rust-executor
+    steps:
+      - checkout
+      - run: cargo test
+
+workflows:
+  ci:
+    jobs:
+      - style
+      - tests
