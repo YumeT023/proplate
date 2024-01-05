@@ -1,0 +1,99 @@
+version: 2.1
+executors:
+  rust-executor:
+    docker:
+      - image: cimg/rust:1.75.0
+jobs:
+  style:
+    executor: rust-executor
+    steps:
+      - checkout
+      - run:
+          name: check format
+          command: cargo fmt --check
+
+  tests:
+    executor: rust-executor
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: cargo test
+
+  build-target:
+    parameters:
+      target:
+        type: string
+      requires_mingw:
+        type: boolean
+        default: false
+    executor: rust-executor
+    steps:
+      - checkout
+
+      - when:
+          condition: << parameters.requires_mingw >>
+          steps:
+            - run: sudo apt-get update
+            - run: sudo apt-get upgrade -y
+            - run: sudo apt-get install mingw-w64
+
+      - run:
+          name: Install target << parameters.target >>
+          command: rustup target add << parameters.target >>
+
+      - run:
+          name: Build
+          command: cargo build --release --target=<< parameters.target >>
+
+      - run:
+          name: Package
+          command: |
+            mkdir -p build
+            zip -r build/<< parameters.target >>.zip target/<< parameters.target >>/release/{proplate,proplate.exe}
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "build"
+
+  publish-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+
+      - run:
+          name: Publish if "release" commit
+          command: |
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B)
+
+            if [[ "$COMMIT_MESSAGE" != *"release"* ]]; then
+              echo "No 'release' in commit message, skipping release."
+              exit 0
+            else
+              VERSION=$(echo $COMMIT_MESSAGE | awk '{print $2}')
+              ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace $VERSION ./build
+            fi
+
+workflows:
+  ci:
+    jobs:
+      - style
+      - tests
+
+  build-and-release:
+    jobs:
+      - build-target:
+          name: Build x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-gnu
+          requires_mingw: true
+      - build-target:
+          name: Build x86_64-unknown-linux-musl
+          target: x86_64-unknown-linux-musl
+      - publish-release:
+          requires:
+            - Build x86_64-pc-windows-gnu
+            - Build x86_64-unknown-linux-musl
