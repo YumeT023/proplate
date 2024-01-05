@@ -1,5 +1,5 @@
 use std::env::current_dir;
-use std::fs::{self, read_dir};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use proplate_tui::logger;
@@ -33,9 +33,6 @@ fn clone_local_template(location: &str, dest: &str) -> ProplateResult<Template> 
     "{}",
     logger::step(&format!("Cloning local template {}...", location))
   );
-
-  fs::create_dir_all(&path)
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![&path, Path::new(&dest)]))?;
 
   pfs::copy_fdir(from, &path, None)
     .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![from, &path]))?;
@@ -72,7 +69,7 @@ fn template_with_filebase(
   id: &str,
   source: Option<String>,
 ) -> ProplateResult<Template> {
-  let file_list = read_dir(&path)
+  let file_list = fs::read_dir(&path)
     .map_err(|e| ProplateError::fs(&e.to_string(), vec![&path]))?
     .into_iter()
     .filter_map(|e| match e {

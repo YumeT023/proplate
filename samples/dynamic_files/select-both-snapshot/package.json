@@ -1,0 +1,6 @@
+{
+  "name": "select-both",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "main.js"
+}
