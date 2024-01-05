@@ -8,16 +8,84 @@ jobs:
     executor: rust-executor
     steps:
       - checkout
-      - run: cargo fmt --check
+      - run:
+          name: check format
+          command: cargo fmt --check
 
   tests:
     executor: rust-executor
     steps:
       - checkout
-      - run: cargo test
+      - run:
+          name: run tests
+          command: cargo test
+
+  build-target:
+    parameters:
+      target:
+        type: string
+      requires_mingw:
+        type: boolean
+        default: false
+    executor: rust-executor
+    steps:
+      - checkout
+
+      - when:
+          condition: << parameters.requires_mingw >>
+          steps:
+            - run: sudo apt-get update
+            - run: sudo apt-get upgrade -y
+            - run: sudo apt-get install mingw-w64
+
+      - run:
+          name: Install target << parameters.target >>
+          command: rustup target add << parameters.target >>
+
+      - run:
+          name: Build
+          command: cargo build --release --target=<< parameters.target >>
+
+      - run:
+          name: Package
+          command: |
+            mkdir -p build
+            zip -r build/<< parameters.target >>.zip target/<< parameters.target >>/release/{proplate,proplate.exe}
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "build"
+
+  publish-release:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish release
+          command: |
+            VERSION=$(git describe --tags)
+            ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace $VERSION ./build/*.zip
 
 workflows:
   ci:
     jobs:
       - style
       - tests
+
+  build-and-release:
+    jobs:
+      - build-target:
+          name: Build x86_64-pc-windows-gnu
+          target: x86_64-pc-windows-gnu
+          requires_mingw: true
+      - build-target:
+          name: Build x86_64-unknown-linux-musl
+          target: x86_64-unknown-linux-musl
+      - publish-release:
+          requires:
+            - Build x86_64-pc-windows-gnu
+            - Build x86_64-unknown-linux-musl
