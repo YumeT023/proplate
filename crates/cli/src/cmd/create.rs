@@ -24,8 +24,8 @@ pub struct CreateOptions {
 type Context = HashMap<String, String>;
 
 /// Create project starter
-/// Entrypoint for cli
-pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
+/// entrypoint for cli since it has lot more interaction:D
+pub fn run_create(source: &str, dest: &str, options: CreateOptions) -> ProplateResult<()> {
   println!("{}", logger::title("Setup template"));
   let mut fork = fork_template(source, dest)?;
   let ctx = prompt_args(&fork)?;
@@ -34,13 +34,13 @@ pub fn create(source: &str, dest: &str, options: CreateOptions) -> ProplateResul
     init_git_repo(&fork.base_path)?
   }
 
-  _create(&mut fork, dest, options, &ctx)?;
+  create(&mut fork, dest, options, &ctx)?;
   Ok(())
 }
 
 /// Create project starter
-/// impl details
-fn _create(
+/// lib entrypoint
+pub fn create(
   fork: &mut Template,
   dest: &str,
   _options: CreateOptions,
