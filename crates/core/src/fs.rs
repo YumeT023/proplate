@@ -49,6 +49,17 @@ pub fn map_file(path: &Path, f: impl Fn(&str) -> String) -> std::io::Result<()> 
   fs::write(path, f(&content))
 }
 
+pub fn is_dir_superset(dir1: &Path, dir2: &Path) -> std::io::Result<bool> {
+  for (file, relative) in walk_dir(dir1)? {
+    let a = fs::read_to_string(&file)?;
+    let b = fs::read_to_string(dir2.join(&relative))?;
+    if a != b {
+      return Ok(false);
+    }
+  }
+  Ok(true)
+}
+
 #[macro_export]
 macro_rules! join_path {
   ($($path:expr),*) => ({
