@@ -75,6 +75,20 @@ macro_rules! assert_gen_snapshot {
         assert_eq!( snap, gen );
       })+;
     };
+
+    ($snapshot: expr, $generated: expr) => {
+      for (filepath, relative) in walk_dir(&$snapshot).expect("walk snap") {
+        let snap = fs::read_to_string(filepath).expect("read snap");
+        let gen = fs::read_to_string($generated.join(&relative)).expect("read gen");
+        assert_eq!( snap, gen );
+      }
+
+      for (filepath, relative) in walk_dir(&$generated).expect("walk gen") {
+        let gen = fs::read_to_string(filepath).expect("read gen");
+        let snap = fs::read_to_string($snapshot.join(&relative)).expect("read snap");
+        assert_eq!( snap, gen );
+      }
+    }
 }
 
 /// Ensures the following

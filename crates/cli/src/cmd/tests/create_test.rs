@@ -37,8 +37,10 @@ mod dynamic_files {
   use std::collections::HashMap;
   use std::fs;
 
-  use proplate_core::template::resolver::clone_template;
-  use proplate_core::template::META_CONF;
+  use proplate_core::{
+    fs::walk::walk_dir,
+    template::{resolver::clone_template, META_CONF},
+  };
 
   #[test]
   fn empty_dyn_file() {
@@ -53,7 +55,7 @@ mod dynamic_files {
         let (path, snap) = test_create!("dynamic_files", "empty-dyn-file", ctx);
 
         assert_gen_ok!(&path);
-        assert_gen_snapshot!(&snap, &path, "main.js" "package.json");
+        assert_gen_snapshot!(&snap, &path);
 
         Ok(())
       },
@@ -74,7 +76,7 @@ mod dynamic_files {
         let (path, snap) = test_create!("dynamic_files", "only-pkg", ctx);
 
         assert_gen_ok!(&path);
-        assert_gen_snapshot!(&snap, &path, "main.js" "package.json");
+        assert_gen_snapshot!(&snap, &path);
 
         Ok(())
       },
@@ -95,7 +97,7 @@ mod dynamic_files {
         let (path, snap) = test_create!("dynamic_files", "select-both", ctx);
 
         assert_gen_ok!(&path);
-        assert_gen_snapshot!(&snap, &path, "main.js" "package.json");
+        assert_gen_snapshot!(&snap, &path);
 
         Ok(())
       },
