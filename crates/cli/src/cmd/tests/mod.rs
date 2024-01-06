@@ -75,6 +75,11 @@ macro_rules! assert_gen_snapshot {
         assert_eq!( snap, gen );
       })+;
     };
+
+    ($snapshot: expr, $generated: expr) => {
+      assert!(is_dir_superset(&$snapshot, &$generated).expect("test 1"));
+      assert!(is_dir_superset(&$generated, &$snapshot).expect("test 2"));
+    }
 }
 
 /// Ensures the following
