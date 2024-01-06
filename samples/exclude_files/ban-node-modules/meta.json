@@ -1,0 +1,5 @@
+{
+  "id": "only-pkg",
+  "dynamic_files": ["package.json"],
+  "exclude": ["meta.json", "node_modules"]
+}
