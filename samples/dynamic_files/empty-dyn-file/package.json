@@ -1,0 +1,6 @@
+{
+  "name": "$name",
+  "version": "$ver",
+  "type": "$file_structure",
+  "main": "main.js"
+}
