@@ -1,5 +1,6 @@
 {
   "id": "only-pkg",
+  "args": [],
   "dynamic_files": ["package.json"],
-  "exclude": ["meta.json", "node_modules"]
+  "exclude": ["node_modules"]
 }
