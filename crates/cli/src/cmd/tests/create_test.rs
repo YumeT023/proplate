@@ -1,4 +1,34 @@
 #[cfg(test)]
+mod exclude_files {
+  use crate::cmd::create::{create, CreateOptions};
+  use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
+  use crate::{assert_gen_ok, test_create};
+
+  use std::collections::HashMap;
+
+  use proplate_core::template::resolver::clone_template;
+  use proplate_core::template::META_CONF;
+
+  #[test]
+  fn ban() {
+    run_isolated_test(
+      || {
+        let (path, _) = test_create!("exclude_files", "ban-node-modules", HashMap::new());
+
+        // "meta.json" & ".proplate_aux_utils" is banned by default
+        assert_gen_ok!(&path);
+
+        // is cursed node_modules banned!!!
+        assert!(!path.join("node_modules").exists());
+
+        Ok(())
+      },
+      /*clean*/ false,
+    );
+  }
+}
+
+#[cfg(test)]
 mod dynamic_files {
   use crate::cmd::create::{create, CreateOptions};
   use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
