@@ -33,7 +33,8 @@ pub struct TemplateConf {
   pub args: Vec<JSONArg>,
   /// List of files containing dynamic variables
   /// used by Proplate to prevent having to go through every template file
-  pub dynamic_files: Option<Vec<String>>,
+  #[serde(default = "Vec::new")]
+  pub dynamic_files: Vec<String>,
   pub additional_operations: Option<Vec<AdditionalOperation>>,
 }
 
@@ -56,7 +57,8 @@ fn parse_config(meta_json: &str) -> TemplateConf {
 }
 
 fn normalize(config: &mut TemplateConf, base_path: &Path) {
-  set_exclude_files(config, base_path)
+  set_exclude_files(config, base_path);
+  set_dynamic_files(config, base_path);
 }
 
 fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
@@ -64,7 +66,15 @@ fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
 
   // Always exclude meta.json and .proplate_aux_utils
   files.extend([".proplate_aux_utils".into(), META_CONF.into()]);
+  to_tmp_file(files, base_path);
+}
 
+fn set_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
+  let files = &mut config.dynamic_files;
+  to_tmp_file(files, base_path);
+}
+
+fn to_tmp_file(files: &mut Vec<String>, base_path: &Path) {
   for file in files.into_iter() {
     let path = base_path.join(&file).display().to_string();
     *file = path;
