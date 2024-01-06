@@ -3,9 +3,9 @@ use std::{
   path::{Path, PathBuf},
 };
 
-use self::walk::walk_dir_skip;
+use self::walk::{walk_dir, walk_dir_skip};
 
-mod walk;
+pub mod walk;
 
 /// Copies file/dir recursively
 pub fn copy_fdir(src: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::io::Result<()> {
@@ -16,6 +16,14 @@ pub fn copy_fdir(src: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::
       fs::create_dir_all(&parent)?;
     }
     fs::copy(file.clone(), &to)?;
+  }
+  Ok(())
+}
+
+pub fn map_fdir(path: &Path, f: impl Fn(&str) -> String) -> std::io::Result<()> {
+  for (file, _) in walk_dir(path)? {
+    let content = fs::read_to_string(&file)?;
+    fs::write(&file, f(content.as_str()))?;
   }
   Ok(())
 }

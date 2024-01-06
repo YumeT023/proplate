@@ -1,7 +1,12 @@
 use serde::{Deserialize, Serialize};
-use std::{fs, path::Path};
+use std::{
+  fs,
+  path::{Path, PathBuf},
+};
 
 use proplate_errors::ProplateError;
+
+use crate::fs::walk::walk_dir_skip;
 
 use super::{op::AdditionalOperation, META_CONF};
 
@@ -70,8 +75,44 @@ fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
 }
 
 fn set_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
-  let files = &mut config.dynamic_files;
-  to_tmp_file(files, base_path);
+  if config.dynamic_files.is_empty() {
+    populate_dynamic_files(config, base_path);
+  } else {
+    update_dynamic_files(config, base_path);
+  }
+}
+
+fn populate_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
+  let TemplateConf {
+    dynamic_files,
+    exclude,
+    ..
+  } = config;
+  let exclude_paths = exclude.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>();
+  *dynamic_files = walk_dir_skip(base_path, exclude_paths)
+    .expect("Walk dir")
+    .iter()
+    .map(|(file, _)| file.display().to_string())
+    .collect::<Vec<_>>();
+}
+
+fn update_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
+  let TemplateConf {
+    dynamic_files,
+    exclude,
+    ..
+  } = config;
+  to_tmp_file(dynamic_files, base_path);
+  *dynamic_files = dynamic_files
+    .into_iter()
+    .filter_map(|file| {
+      if !exclude.contains(&file) {
+        Some(file.to_owned())
+      } else {
+        None
+      }
+    })
+    .collect::<Vec<_>>();
 }
 
 fn to_tmp_file(files: &mut Vec<String>, base_path: &Path) {
