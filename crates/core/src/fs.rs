@@ -1,43 +1,21 @@
 use std::{
   fs,
-  io::{Error, ErrorKind},
   path::{Path, PathBuf},
 };
 
+use self::walk::walk_dir_skip;
+
+mod walk;
+
 /// Copies file/dir recursively
 pub fn copy_fdir(src: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::io::Result<()> {
-  _copy_fdir(src, dest, &except.unwrap_or_default())
-}
-
-fn _copy_fdir(src: &Path, dest: &Path, except: &Vec<PathBuf>) -> std::io::Result<()> {
-  if src.is_file() {
-    // Create the destination directory if it doesn't exist
-    if let Some(parent) = dest.parent() {
+  fs::create_dir_all(dest)?;
+  for (file, filename) in walk_dir_skip(src, except.unwrap_or_default())? {
+    let to = dest.join(filename);
+    if let Some(parent) = to.parent() {
       fs::create_dir_all(&parent)?;
     }
-    fs::copy(&src, &dest)?;
-    return Ok(());
-  }
-
-  // Create the destination directory if it doesn't exist
-  fs::create_dir_all(&dest)?;
-
-  for entry in fs::read_dir(src)? {
-    let entry = entry?;
-    let path = entry.path();
-
-    if except.contains(&path) {
-      continue;
-    }
-
-    let file_name = path.file_name().ok_or_else(|| {
-      Error::new(
-        ErrorKind::InvalidInput,
-        "File does not have a valid filename",
-      )
-    })?;
-    let dest_path = dest.join(file_name);
-    _copy_fdir(&path, &dest_path, except)?;
+    fs::copy(file.clone(), &to)?;
   }
   Ok(())
 }
