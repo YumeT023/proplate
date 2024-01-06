@@ -1,6 +1,6 @@
 [package]
 name = "proplate"
-version = "0.2.0"
+version = "0.2.3"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 clap = "4.4.10"
 inquire = "0.6.2"
-proplate-core = { version = "0.2.0", path = "../core" }
+proplate-core = { version = "0.2.3", path = "../core" }
 proplate-errors = { version = "0.2.0", path = "../errors" }
 proplate-integration = { version = "0.2.0", path = "../integration" }
 proplate-tui = { version = "0.2.0", path = "../tui" }
