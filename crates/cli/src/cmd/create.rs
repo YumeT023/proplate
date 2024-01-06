@@ -1,8 +1,4 @@
-use std::{
-  collections::HashMap,
-  fs,
-  path::{Path, PathBuf},
-};
+use std::{collections::HashMap, fs, path::Path};
 
 use inquire::Confirm;
 use proplate_core::{
@@ -139,11 +135,14 @@ fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
   pfs::copy_fdir(
     src,
     dest,
-    template
-      .conf
-      .exclude
-      .clone()
-      .map(|vec| vec.iter().map(|s| PathBuf::from(s)).collect::<Vec<_>>()),
+    Some(
+      template
+        .conf
+        .exclude
+        .iter()
+        .map(|s| s.into())
+        .collect::<Vec<_>>(),
+    ),
   )
   .map_err(|e| {
     ProplateError::fs(

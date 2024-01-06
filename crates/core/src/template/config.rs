@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::{fs, path::PathBuf};
+use std::{fs, path::Path};
 
 use proplate_errors::ProplateError;
-use proplate_tui::logger::{self, AsError};
 
 use super::{op::AdditionalOperation, META_CONF};
 
@@ -28,8 +27,8 @@ pub struct TemplateConf {
   pub id: String,
   /// Auxiliary proplate utils
   /// for example, a "License" file that is only copied if the "License" arg is set to "MIT"
-  #[serde(default = "default_proplate_aux_utils")]
-  pub exclude: Option<Vec<String>>,
+  #[serde(default = "Vec::new")]
+  pub exclude: Vec<String>,
   /// Arguments that Proplate will ask when a project is created using the associated template
   pub args: Vec<JSONArg>,
   /// List of files containing dynamic variables
@@ -38,19 +37,36 @@ pub struct TemplateConf {
   pub additional_operations: Option<Vec<AdditionalOperation>>,
 }
 
-pub fn get_template_conf(base_path: PathBuf) -> TemplateConf {
-  let path = base_path.join(META_CONF);
-  let meta_json = fs::read_to_string(path).expect(&logger::error("Unable to read meta.json"));
+impl TemplateConf {
+  pub fn new(path: &Path) -> TemplateConf {
+    let conf = path.join(META_CONF);
+    let meta_json = fs::read_to_string(conf).expect("meta.json can't be located or locked");
+    let mut config = parse_config(&meta_json);
 
-  match serde_json::from_str(&meta_json) {
-    Ok(conf) => conf,
-    Err(e) => panic!(
-      "{}",
-      ProplateError::invalid_template_conf(&e.to_string()).print_err()
-    ),
+    normalize(&mut config, path);
+
+    config
   }
 }
 
-fn default_proplate_aux_utils() -> Option<Vec<String>> {
-  Some(vec![".proplate_aux_utils".into(), META_CONF.to_string()])
+fn parse_config(meta_json: &str) -> TemplateConf {
+  serde_json::from_str(meta_json)
+    .map_err(|e| ProplateError::invalid_template_conf(e.to_string().as_str()))
+    .unwrap()
+}
+
+fn normalize(config: &mut TemplateConf, base_path: &Path) {
+  set_exclude_files(config, base_path)
+}
+
+fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
+  let files = &mut config.exclude;
+
+  // Always exclude meta.json and .proplate_aux_utils
+  files.extend([".proplate_aux_utils".into(), META_CONF.into()]);
+
+  for file in files.into_iter() {
+    let path = base_path.join(&file).display().to_string();
+    *file = path;
+  }
 }

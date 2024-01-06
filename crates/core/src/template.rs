@@ -4,10 +4,7 @@ use proplate_tui::logger;
 
 use crate::join_path;
 
-use self::{
-  config::{get_template_conf, TemplateConf},
-  op::Operation,
-};
+use self::{config::TemplateConf, op::Operation};
 
 pub mod config;
 pub mod inquirer;
@@ -50,7 +47,7 @@ impl Template {
       base_path: base_path.clone(),
       base_file_list,
       fork_source,
-      conf: get_template_conf(base_path),
+      conf: TemplateConf::new(&base_path),
     }
   }
 
@@ -59,21 +56,6 @@ impl Template {
   pub fn normalize_template(template: &mut Template) {
     Self::_normalize_conditional_operations(template);
     Self::_normalize_dynamic_files(template);
-    Self::_normalize_exclude_files(template);
-  }
-
-  fn _normalize_exclude_files(template: &mut Template) {
-    let config = &mut template.conf;
-    if let Some(exclude) = &mut config.exclude {
-      for file in exclude {
-        *file = template
-          .base_path
-          .join(PathBuf::from(file.as_str()))
-          .to_str()
-          .map(|s| s.to_string())
-          .unwrap();
-      }
-    }
   }
 
   /// Normalizes the paths in dynamic_files
