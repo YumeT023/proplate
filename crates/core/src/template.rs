@@ -55,20 +55,6 @@ impl Template {
   /// write present path to its canonical form
   pub fn normalize_template(template: &mut Template) {
     Self::_normalize_conditional_operations(template);
-    Self::_normalize_dynamic_files(template);
-  }
-
-  /// Normalizes the paths in dynamic_files
-  fn _normalize_dynamic_files(template: &mut Template) {
-    let config = &mut template.conf;
-    if let Some(dynamic_files) = &mut config.dynamic_files {
-      for file in dynamic_files {
-        *file = join_path!(&template.base_path, &file)
-          .to_str()
-          .map(|s| s.to_string())
-          .unwrap();
-      }
-    }
   }
 
   /// Normalizes the paths in conditional_operations

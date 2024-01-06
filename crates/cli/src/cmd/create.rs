@@ -104,11 +104,9 @@ fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()
 
   println!("{}", logger::step("Binding ctx to dynamic_files..."));
 
-  if let Some(dynamic_files) = dynamic_files {
-    for filepath in dynamic_files {
-      println!("      {}", logger::step(&format!("processing...")));
-      bind_ctx_to_file(Path::new(filepath), ctx);
-    }
+  for filepath in dynamic_files {
+    println!("      {}", logger::step(&format!("processing...")));
+    bind_ctx_to_file(Path::new(filepath), ctx);
   }
 
   Ok(())

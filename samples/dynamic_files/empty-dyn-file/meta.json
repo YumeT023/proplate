@@ -1,0 +1,21 @@
+{
+  "id": "only-pkg",
+  "args": [
+    {
+      "key": "name",
+      "q_type": "Text",
+      "label": "Give your project a name"
+    },
+    {
+      "key": "ver",
+      "q_type": "Text",
+      "label": "Initial version"
+    },
+    {
+      "key": "file_structure",
+      "q_type": "Select",
+      "label": "Select file structure",
+      "options": ["commonjs", "module"]
+    }
+  ]
+}
