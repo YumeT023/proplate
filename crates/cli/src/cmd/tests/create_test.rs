@@ -41,6 +41,27 @@ mod dynamic_files {
   use proplate_core::template::META_CONF;
 
   #[test]
+  fn empty_dyn_file() {
+    run_isolated_test(
+      || {
+        let ctx = HashMap::from([
+          ("name".to_string(), "empty-dyn-file".to_string()),
+          ("ver".to_string(), "1.0.0".to_string()),
+          ("file_structure".to_string(), "module".to_string()),
+        ]);
+
+        let (path, snap) = test_create!("dynamic_files", "empty-dyn-file", ctx);
+
+        assert_gen_ok!(&path);
+        assert_gen_snapshot!(&snap, &path, "main.js" "package.json");
+
+        Ok(())
+      },
+      /*clean*/ false,
+    );
+  }
+
+  #[test]
   fn only_pkg() {
     run_isolated_test(
       || {
