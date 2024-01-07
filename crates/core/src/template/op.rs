@@ -1,4 +1,4 @@
-use std::{collections::HashMap, path::Path};
+use std::{collections::HashMap, fs, path::Path};
 
 use proplate_errors::{ProplateError, ProplateResult};
 use serde::{Deserialize, Serialize};
@@ -21,7 +21,7 @@ pub struct Condition {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Operation {
-  Copy { files: Vec<String>, dest: String },
+  Copy { file: String, dest: String },
   Remove { files: Vec<String> },
 }
 
@@ -56,13 +56,10 @@ pub trait Execute {
 impl Execute for Operation {
   fn execute(&self, _ctx: &HashMap<String, String>) -> ProplateResult<()> {
     match self {
-      Operation::Copy { files, dest } => {
-        let dest = Path::new(dest);
-        for file in files {
-          let src = Path::new(&file);
-          pfs::copy_fdir(src, dest, None)
-            .map_err(|e| ProplateError::fs(&e.to_string(), vec![&src, &dest]))?;
-        }
+      Operation::Copy { file, dest } => {
+        let src = Path::new(&file);
+        let dest = Path::new(&dest);
+        fs::copy(src, dest).map_err(|e| ProplateError::fs(&e.to_string(), vec![&src, &dest]))?;
         Ok(())
       }
       Operation::Remove { files } => {

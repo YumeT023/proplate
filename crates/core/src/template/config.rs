@@ -83,8 +83,10 @@ fn set_additional_ops_files(config: &mut TemplateConf, base_path: &Path) {
   for additional_op in &mut config.additional_operations {
     for op in &mut additional_op.operations {
       match op {
-        Operation::Copy { files, dest } => {
-          to_tmp_files(files, base_path);
+        Operation::Copy { file, dest } => {
+          *file = to_tmp_file(PathBuf::from(&file), base_path)
+            .display()
+            .to_string();
           *dest = to_tmp_file(PathBuf::from(&dest), base_path)
             .display()
             .to_string();

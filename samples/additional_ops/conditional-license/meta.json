@@ -30,7 +30,7 @@
       "operations": [
         {
           "Copy": {
-            "files": [".proplate_aux_utils/MIT"],
+            "file": ".proplate_aux_utils/MIT",
             "dest": "LICENSE"
           }
         }
@@ -47,7 +47,7 @@
       "operations": [
         {
           "Copy": {
-            "files": [".proplate_aux_utils/BSD-2-Clause"],
+            "file": ".proplate_aux_utils/BSD-2-Clause",
             "dest": "LICENSE"
           }
         }
