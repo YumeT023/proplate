@@ -8,7 +8,10 @@ use proplate_errors::ProplateError;
 
 use crate::fs::walk::walk_dir_skip;
 
-use super::{op::AdditionalOperation, META_CONF};
+use super::{
+  op::{AdditionalOperation, Operation},
+  META_CONF,
+};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum JSONArgType {
@@ -73,11 +76,25 @@ fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
 
   // Always exclude meta.json and .proplate_aux_utils
   files.extend([".proplate_aux_utils".into(), META_CONF.into()]);
-  to_tmp_file(files, base_path);
+  to_tmp_files(files, base_path);
 }
 
 fn set_additional_ops_files(config: &mut TemplateConf, base_path: &Path) {
-  todo!()
+  for additional_op in &mut config.additional_operations {
+    for op in &mut additional_op.operations {
+      match op {
+        Operation::Copy { files, dest } => {
+          to_tmp_files(files, base_path);
+          *dest = to_tmp_file(PathBuf::from(&dest), base_path)
+            .display()
+            .to_string();
+        }
+        Operation::Remove { files } => {
+          to_tmp_files(files, base_path);
+        }
+      }
+    }
+  }
 }
 
 fn set_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
@@ -108,7 +125,7 @@ fn update_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
     exclude,
     ..
   } = config;
-  to_tmp_file(dynamic_files, base_path);
+  to_tmp_files(dynamic_files, base_path);
   *dynamic_files = dynamic_files
     .into_iter()
     .filter_map(|file| {
@@ -121,9 +138,14 @@ fn update_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
     .collect::<Vec<_>>();
 }
 
-fn to_tmp_file(files: &mut Vec<String>, base_path: &Path) {
+fn to_tmp_files(files: &mut Vec<String>, base: &Path) {
   for file in files.into_iter() {
-    let path = base_path.join(&file).display().to_string();
-    *file = path;
+    *file = to_tmp_file(PathBuf::from(&file), base)
+      .display()
+      .to_string();
   }
+}
+
+fn to_tmp_file(path: PathBuf, base: &Path) -> PathBuf {
+  base.join(path)
 }
