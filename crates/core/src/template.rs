@@ -2,9 +2,7 @@ use std::{fmt::Display, path::PathBuf};
 
 use proplate_tui::logger;
 
-use crate::join_path;
-
-use self::{config::TemplateConf, op::Operation};
+use self::config::TemplateConf;
 
 pub mod config;
 pub mod inquirer;
@@ -48,46 +46,6 @@ impl Template {
       base_file_list,
       fork_source,
       conf: TemplateConf::new(&base_path),
-    }
-  }
-
-  /// Prettifies template
-  /// write present path to its canonical form
-  pub fn normalize_template(template: &mut Template) {
-    Self::_normalize_conditional_operations(template);
-  }
-
-  /// Normalizes the paths in conditional_operations
-  fn _normalize_conditional_operations(template: &mut Template) {
-    let config = &mut template.conf;
-    let base_path = PathBuf::from(template.base_path.to_str().unwrap());
-    if let Some(conditional_ops) = &mut config.additional_operations {
-      for ops in conditional_ops {
-        for op in &mut ops.operations {
-          match op {
-            Operation::Copy { files, dest } => {
-              *dest = join_path!(base_path.clone(), &dest)
-                .to_str()
-                .unwrap()
-                .to_string();
-              for file in files {
-                *file = join_path!(base_path.clone(), &file)
-                  .to_str()
-                  .unwrap()
-                  .to_string();
-              }
-            }
-            Operation::Remove { files } => {
-              for file in files {
-                *file = join_path!(base_path.clone(), &file)
-                  .to_str()
-                  .unwrap()
-                  .to_string();
-              }
-            }
-          }
-        }
-      }
     }
   }
 

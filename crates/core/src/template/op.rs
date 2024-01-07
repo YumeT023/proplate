@@ -27,7 +27,8 @@ pub enum Operation {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct AdditionalOperation {
-  pub conditions: Option<Vec<Condition>>,
+  #[serde(default = "Vec::new")]
+  pub conditions: Vec<Condition>,
   /// operations to execute if the above conditions are evaluated as true
   pub operations: Vec<Operation>,
 }
@@ -77,10 +78,11 @@ impl Execute for Operation {
 
 impl Execute for AdditionalOperation {
   fn execute(&self, ctx: &HashMap<String, String>) -> ProplateResult<()> {
-    // eval condition or execute op directly
-    let true_ = match &self.conditions {
-      Some(conditions) => conditions.iter().all(|c| c.eval_in_ctx(ctx)),
-      _ => true,
+    // eval condition or true if it is empty or missing
+    let conditions = &self.conditions;
+    let true_ = match conditions.is_empty() {
+      true => true,
+      false => conditions.iter().all(|c| c.eval_in_ctx(ctx)),
     };
 
     if true_ {
