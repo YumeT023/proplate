@@ -1,0 +1,49 @@
+{
+  "id": "initial-template",
+  "args": [
+    {
+      "key": "project_name",
+      "q_type": "Text",
+      "label": "Enter your project name"
+    },
+    {
+      "key": "author",
+      "q_type": "Text",
+      "label": "Who is da author"
+    },
+    {
+      "key": "license",
+      "q_type": "Select",
+      "label": "Select a license for your project",
+      "options": ["MIT", "BSD-2-Clause", "none"]
+    }
+  ],
+  "additional_operations": [
+    {
+      "conditions": [
+        {
+          "lhs": "$license",
+          "op": "Eq",
+          "rhs": "MIT"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "file": ".proplate_aux_utils/MIT",
+            "dest": "LICENSE"
+          }
+        }
+      ]
+    },
+    {
+      "operations": [
+        {
+          "Remove": {
+            "files": ["SIMPLY_DELETE"]
+          }
+        }
+      ]
+    }
+  ]
+}
