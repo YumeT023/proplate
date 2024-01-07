@@ -40,7 +40,8 @@ pub struct TemplateConf {
   /// used by Proplate to prevent having to go through every template file
   #[serde(default = "Vec::new")]
   pub dynamic_files: Vec<String>,
-  pub additional_operations: Option<Vec<AdditionalOperation>>,
+  #[serde(default = "Vec::new")]
+  pub additional_operations: Vec<AdditionalOperation>,
 }
 
 impl TemplateConf {
@@ -63,6 +64,7 @@ fn parse_config(meta_json: &str) -> TemplateConf {
 
 fn normalize(config: &mut TemplateConf, base_path: &Path) {
   set_exclude_files(config, base_path);
+  set_additional_ops_files(config, base_path);
   set_dynamic_files(config, base_path);
 }
 
@@ -72,6 +74,10 @@ fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
   // Always exclude meta.json and .proplate_aux_utils
   files.extend([".proplate_aux_utils".into(), META_CONF.into()]);
   to_tmp_file(files, base_path);
+}
+
+fn set_additional_ops_files(config: &mut TemplateConf, base_path: &Path) {
+  todo!()
 }
 
 fn set_dynamic_files(config: &mut TemplateConf, base_path: &Path) {

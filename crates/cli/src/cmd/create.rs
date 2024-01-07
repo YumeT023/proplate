@@ -42,7 +42,6 @@ pub fn create(
   _options: CreateOptions,
   ctx: &Context,
 ) -> ProplateResult<()> {
-  normalize_template(fork);
   process_template(fork, ctx)?;
   prepare_dest(dest)?;
   copy_files(fork, dest)?;
@@ -62,11 +61,6 @@ fn prepare_dest(dest: &str) -> ProplateResult<()> {
 fn fork_template(from: &str, dest: &str) -> ProplateResult<Template> {
   println!("{}", logger::step("Finding template..."));
   clone_template(from, dest)
-}
-
-/// Canonicalizes paths under "meta.dynamic_files", "meta.additional_operations" and "meta.exclude"
-fn normalize_template(template: &mut Template) {
-  Template::normalize_template(template);
 }
 
 /// Interactively prompts args under "meta.args"
@@ -96,10 +90,8 @@ fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()
 
   // run "additional_operations" in order to process the dynamically
   // added file in the extra operation.
-  if let Some(ops) = &additional_operations {
-    for op in ops {
-      op.execute(&ctx)?;
-    }
+  for op in additional_operations {
+    op.execute(&ctx)?;
   }
 
   println!("{}", logger::step("Binding ctx to dynamic_files..."));
