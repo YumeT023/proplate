@@ -1,0 +1,10 @@
+{
+  "name": "unlicensed",
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "Proplate"
+  },
+  "license": "UNLICENSED",
+  "main": "main.js"
+}

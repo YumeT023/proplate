@@ -1,0 +1,57 @@
+{
+  "id": "only-pkg",
+  "args": [
+    {
+      "key": "project_name",
+      "q_type": "Text",
+      "label": "Give your project a name"
+    },
+    {
+      "key": "author_name",
+      "q_type": "Text",
+      "label": "Author"
+    },
+    {
+      "key": "license",
+      "q_type": "Select",
+      "label": "Select license",
+      "options": ["MIT", "BSD-2-Clause", "UNLICENSED"]
+    }
+  ],
+  "additional_operations": [
+    {
+      "conditions": [
+        {
+          "lhs": "$license",
+          "op": "Eq",
+          "rhs": "MIT"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "files": [".proplate_aux_utils/MIT"],
+            "dest": "LICENSE"
+          }
+        }
+      ]
+    },
+    {
+      "conditions": [
+        {
+          "lhs": "$license",
+          "op": "Eq",
+          "rhs": "BSD-2-Clause"
+        }
+      ],
+      "operations": [
+        {
+          "Copy": {
+            "files": [".proplate_aux_utils/BSD-2-Clause"],
+            "dest": "LICENSE"
+          }
+        }
+      ]
+    }
+  ]
+}

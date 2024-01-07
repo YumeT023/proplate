@@ -1,0 +1,10 @@
+{
+  "name": "bsd-2-clause",
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "Proplate"
+  },
+  "license": "BSD-2-Clause",
+  "main": "main.js"
+}

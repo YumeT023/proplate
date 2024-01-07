@@ -1,0 +1,10 @@
+{
+  "name": "mit",
+  "version": "1.0.0",
+  "type": "module",
+  "author": {
+    "name": "Proplate"
+  },
+  "license": "MIT",
+  "main": "main.js"
+}
