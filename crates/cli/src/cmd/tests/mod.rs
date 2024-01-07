@@ -4,7 +4,7 @@ use std::{
   process::Command,
 };
 
-use proplate_core::join_path;
+use proplate_core::{fs::walk::walk_dir, join_path};
 use proplate_errors::ProplateResult;
 use proplate_tui::logger::AsError;
 use uuid::Uuid;
@@ -52,34 +52,38 @@ fn new_trash() -> (PathBuf, String /*uuid*/) {
 }
 
 /// because I have to clean it here...
+#[allow(unused)]
 fn cleanup_test_trash() {
   fs::remove_dir_all(get_trash()).expect("rm test_trash");
 }
 
-fn run_isolated_test(f: impl Fn() -> ProplateResult<()>, clean: bool) {
+fn run_isolated_test(f: impl Fn() -> ProplateResult<()>, _clean: bool) {
   match f() {
     Err(e) => {
       panic!("{}: {}:{}", e.print_err(), line!(), column!())
     }
     _ => (),
   }
-  clean.then(|| cleanup_test_trash());
+  // rust tests run in parallel
+  // fixme: sadly.... WE CANNOT CLEANUP THE TRASH... as some tests may still use it
+  // clean.then(|| cleanup_test_trash());
+}
+
+fn assert_dir_superset(dir1: &Path, dir2: &Path) -> std::io::Result<()> {
+  for (file, relative) in walk_dir(dir1)? {
+    let a = fs::read_to_string(&file)?;
+    let b = fs::read_to_string(dir2.join(&relative))?;
+    assert_eq!(a, b);
+  }
+  Ok(())
 }
 
 #[macro_export]
 macro_rules! assert_gen_snapshot {
-    ($snapshot: expr, $generated: expr, $($files: expr)+) => {
-      $({
-        let snap = fs::read_to_string($snapshot.join($files)).expect("read snap");
-        let gen = fs::read_to_string($generated.join($files)).expect("read gen");
-        assert_eq!( snap, gen );
-      })+;
-    };
-
-    ($snapshot: expr, $generated: expr) => {
-      assert!(is_dir_superset(&$snapshot, &$generated).expect("test 1"));
-      assert!(is_dir_superset(&$generated, &$snapshot).expect("test 2"));
-    }
+  ($snapshot: expr, $generated: expr) => {
+    assert_dir_superset(&$snapshot, &$generated).expect("test 1");
+    assert_dir_superset(&$generated, &$snapshot).expect("test 2");
+  };
 }
 
 /// Ensures the following

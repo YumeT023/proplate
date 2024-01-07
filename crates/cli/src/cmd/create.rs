@@ -4,8 +4,12 @@ use inquire::Confirm;
 use proplate_core::{
   fs as pfs,
   template::{
-    config::TemplateConf, inquirer::Input, interpolation::MapWithCtx, op::Execute,
-    resolver::clone_template, Template,
+    config::{analyze_dyn_files, TemplateConf},
+    inquirer::Input,
+    interpolation::MapWithCtx,
+    op::Execute,
+    resolver::clone_template,
+    Template,
   },
 };
 use proplate_errors::{ProplateError, ProplateResult};
@@ -80,25 +84,27 @@ fn prompt_args(template: &Template) -> ProplateResult<Context> {
 
 /// Executes hook and bind ctx onto dynamic_files.
 fn process_template(template: &mut Template, ctx: &Context) -> ProplateResult<()> {
-  let TemplateConf {
-    additional_operations,
-    dynamic_files,
-    ..
-  } = &template.conf;
-
   println!("{}", logger::step("Running additional operations..."));
 
   // run "additional_operations" in order to process the dynamically
   // added file in the extra operation.
-  for op in additional_operations {
+  for op in &template.conf.additional_operations {
     op.execute(&ctx)?;
+  }
+
+  println!(
+    "{}",
+    logger::step("Verifying whether analysis of dyn files is necessary...")
+  );
+  if template.conf.require_dyn_file_analysis {
+    analyze_dyn_files(&mut template.conf, &template.base_path);
   }
 
   println!("{}", logger::step("Binding ctx to dynamic_files..."));
 
-  for filepath in dynamic_files {
+  for filepath in &template.conf.dynamic_files {
     println!("      {}", logger::step(&format!("processing...")));
-    bind_ctx_to_file(Path::new(filepath), ctx);
+    bind_ctx_to_file(Path::new(&filepath), ctx);
   }
 
   Ok(())

@@ -31,15 +31,12 @@ mod exclude_files {
 #[cfg(test)]
 mod dynamic_files {
   use crate::cmd::create::{create, CreateOptions};
-  use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
+  use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
   use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
 
   use std::collections::HashMap;
 
-  use proplate_core::{
-    fs::is_dir_superset,
-    template::{resolver::clone_template, META_CONF},
-  };
+  use proplate_core::template::{resolver::clone_template, META_CONF};
 
   #[test]
   fn empty_dyn_file() {
@@ -108,15 +105,12 @@ mod dynamic_files {
 #[cfg(test)]
 mod additional_ops {
   use crate::cmd::create::{create, CreateOptions};
-  use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
+  use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
   use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
 
   use std::collections::HashMap;
 
-  use proplate_core::{
-    fs::is_dir_superset,
-    template::{resolver::clone_template, META_CONF},
-  };
+  use proplate_core::template::{resolver::clone_template, META_CONF};
 
   #[test]
   fn unlicensed() {

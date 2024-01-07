@@ -45,6 +45,10 @@ pub struct TemplateConf {
   pub dynamic_files: Vec<String>,
   #[serde(default = "Vec::new")]
   pub additional_operations: Vec<AdditionalOperation>,
+
+  /// Prevent examining dyn files repeatedly.
+  #[serde(skip)]
+  pub require_dyn_file_analysis: bool,
 }
 
 impl TemplateConf {
@@ -68,7 +72,15 @@ fn parse_config(meta_json: &str) -> TemplateConf {
 fn normalize(config: &mut TemplateConf, base_path: &Path) {
   set_exclude_files(config, base_path);
   set_additional_ops_files(config, base_path);
-  set_dynamic_files(config, base_path);
+
+  config.require_dyn_file_analysis = true;
+  // Avoid unnecessary analysis
+  // As only additional_operationns has the power to change the state of the template files, we can
+  // analyze the dyn files here in the absence of any operations and say that no analysis is necessary prior to the dyn files' ctx binding.
+  if config.additional_operations.is_empty() {
+    analyze_dyn_files(config, base_path);
+    config.require_dyn_file_analysis = false;
+  }
 }
 
 fn set_exclude_files(config: &mut TemplateConf, base_path: &Path) {
@@ -99,7 +111,7 @@ fn set_additional_ops_files(config: &mut TemplateConf, base_path: &Path) {
   }
 }
 
-fn set_dynamic_files(config: &mut TemplateConf, base_path: &Path) {
+pub fn analyze_dyn_files(config: &mut TemplateConf, base_path: &Path) {
   if config.dynamic_files.is_empty() {
     populate_dynamic_files(config, base_path);
   } else {
