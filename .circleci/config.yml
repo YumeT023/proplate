@@ -1,4 +1,7 @@
 version: 2.1
+orbs:
+  codecov: codecov/codecov@3.3.0
+
 executors:
   rust-executor:
     docker:
@@ -19,6 +22,19 @@ jobs:
       - run:
           name: run tests
           command: cargo test
+
+  coverage:
+    executor: rust-executor
+    steps:
+      - checkout
+      - run:
+          name: Generate coverage report
+          command: |
+            cargo install grcov
+            cargo test --no-run
+            grcov . -s . -t lcov --llvm --branch --ignore-not-existing --output-path ./lcov.info
+      - codecov/upload:
+          file: ./lcov.info
 
   build-target:
     parameters:
@@ -84,6 +100,9 @@ workflows:
     jobs:
       - style
       - tests
+      - coverage:
+          requires:
+            - tests
 
   build-and-release:
     jobs:
