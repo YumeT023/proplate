@@ -1,7 +1,13 @@
 [package]
 name = "proplate-integration"
+description = "Proplate is a CLI tool that allows you to quickly create and set up project structures based on templates, and also create your own templates for your future projects."
 version = "0.2.0"
+authors = ["Yume Saiko <yumii.saiko@gmail.com>"]
 edition = "2021"
+categories = ["command-line-utilities"]
+keywords = ["productivity", "template", "generate", "create"]
+license = "MIT"
+repository = "https://github.com/YumeT023/proplate"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
