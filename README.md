@@ -1,8 +1,19 @@
 # Proplate 🛠⚙
 
 <div>
+  <a href="https://github.com/YumeT023/proplate/blob/master/LICENSE">
     <img alt="GitHub License" src="https://img.shields.io/github/license/YumeT023/proplate">
-    <img alt="CircleCI" src="https://img.shields.io/circleci/build/github/YumeT023/proplate/master">
+  </a>
+
+  <a href="https://crates.io/crates/proplate" target="_blank">
+    <img src="https://img.shields.io/crates/v/proplate.svg" />
+  </a>
+
+  <a href="https://crates.io/crates/proplate" target="_blank">
+    <img src="https://img.shields.io/crates/dr/proplate" />
+  </a>
+
+  <img alt="CircleCI" src="https://img.shields.io/circleci/build/github/YumeT023/proplate/master">
 </div>
 <br>
 
@@ -13,12 +24,12 @@ Give up setting up the environment each time you begin a project using the same 
 1. [Installation](#installation)
 2. [Use a template to create a project](#use-a-template-to-create-a-project)
 3. [Craft your own template](#craft-your-own-template)
-   * [Ref](#ref)
-   * [Learn by doing](#learn-by-doing)
-     * [tiniest template configuration](#tiniest-template-config)
-     * [args](#args)
-     * [context binding](#context-binding)
-   * [Some extras](#some-extras)
+   - [Ref](#ref)
+   - [Learn by doing](#learn-by-doing)
+     - [tiniest template configuration](#tiniest-template-config)
+     - [args](#args)
+     - [context binding](#context-binding)
+   - [Some extras](#some-extras)
 
 ## Installation
 
