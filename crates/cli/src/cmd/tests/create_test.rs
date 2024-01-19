@@ -100,6 +100,28 @@ mod dynamic_files {
       /*clean*/ false,
     );
   }
+
+  #[test]
+  fn recursive_dyn_file() {
+    run_isolated_test(
+      || {
+        let ctx = HashMap::from([
+          ("dyn0".to_string(), "val0".to_string()),
+          ("d0".to_string(), "v0".to_string()),
+          ("d1".to_string(), "v1".to_string()),
+          ("d2".to_string(), "v2".to_string()),
+        ]);
+
+        let (path, snap) = test_create!("dynamic_files", "recursive-dyn-file", ctx);
+
+        assert_gen_ok!(&path);
+        assert_gen_snapshot!(&snap, &path);
+
+        Ok(())
+      },
+      /*clean*/ false,
+    );
+  }
 }
 
 #[cfg(test)]

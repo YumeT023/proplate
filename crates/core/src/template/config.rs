@@ -6,7 +6,7 @@ use std::{
 
 use proplate_errors::ProplateError;
 
-use crate::fs::walk::walk_dir_skip;
+use crate::fs::walk::{walk_dir, walk_dir_skip};
 
 use super::{
   op::{AdditionalOperation, Operation},
@@ -137,17 +137,27 @@ fn update_dynamic_files(config: &mut TemplateConf, base: &Path) {
     ..
   } = config;
   to_relative_all(dynamic_files, base /* to */);
-  // excluded files shouldn't be dynamic
-  *dynamic_files = dynamic_files
-    .into_iter()
-    .filter_map(|file| {
-      if !exclude.contains(&file) {
-        Some(file.to_owned())
-      } else {
-        None
-      }
-    })
-    .collect::<Vec<_>>();
+
+  let mut expanded = Vec::new();
+
+  // recursively expand the dynamic files
+  for path in dynamic_files.iter() {
+    if let Ok(files) = walk_dir(Path::new(path)) {
+      let paths = files
+        .into_iter()
+        .filter_map(|(file, _)| {
+          let file = file.display().to_string();
+          if exclude.contains(&file) {
+            return None;
+          }
+          Some(file)
+        })
+        .collect::<Vec<_>>();
+      expanded.extend(paths);
+    }
+  }
+
+  dynamic_files.extend(expanded);
 }
 
 fn to_relative_all(files: &mut Vec<String>, to: &Path) {
