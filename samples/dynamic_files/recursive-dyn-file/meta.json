@@ -1,0 +1,5 @@
+{
+  "id": "recursive-dyn-file",
+  "args": [],
+  "dynamic_files": ["variables", "dyn0.in"]
+}
