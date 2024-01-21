@@ -99,6 +99,10 @@ fn set_additional_ops_files(config: &mut TemplateConf, base: &Path) {
           *file = to_relative(PathBuf::from(&file), base);
           *dest = to_relative(PathBuf::from(&dest), base);
         }
+        Operation::CopyDir { path, dest } => {
+          *path = to_relative(PathBuf::from(&path), base);
+          *dest = to_relative(PathBuf::from(&dest), base);
+        }
         Operation::Remove { files } => {
           to_relative_all(files, base);
         }

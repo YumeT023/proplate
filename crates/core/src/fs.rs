@@ -7,15 +7,15 @@ use self::walk::{walk_dir, walk_dir_skip};
 
 pub mod walk;
 
-/// Copies file/dir recursively
-pub fn copy_fdir(src: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::io::Result<()> {
+// Recursively copies dir entries to another
+pub fn copy_fdir(entry: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std::io::Result<()> {
   fs::create_dir_all(dest)?;
-  for (file, filename) in walk_dir_skip(src, except.unwrap_or_default())? {
-    let to = dest.join(filename);
+  for (file, filename) in walk_dir_skip(entry, except.unwrap_or_default())? {
+    let to = dest.join(&filename);
     if let Some(parent) = to.parent() {
       fs::create_dir_all(&parent)?;
     }
-    fs::copy(file.clone(), &to)?;
+    fs::copy(&file, &to).expect(format!("copy: {}\n{}\n\n", file.display(), to.display()).as_str());
   }
   Ok(())
 }

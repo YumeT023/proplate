@@ -202,4 +202,21 @@ mod additional_ops {
       /*clean*/ true,
     );
   }
+
+  #[test]
+  fn copy_dir() {
+    run_isolated_test(
+      || {
+        let ctx = HashMap::new();
+
+        let (path, snap) = test_create!("additional_ops", "copy-dir", ctx);
+
+        assert_gen_ok!(&path);
+        assert_gen_snapshot!(&snap, &path);
+
+        Ok(())
+      },
+      /*clean*/ true,
+    );
+  }
 }

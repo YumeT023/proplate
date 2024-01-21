@@ -1,0 +1,16 @@
+{
+  "id": "copy-dir",
+  "args": [],
+  "additional_operations": [
+    {
+      "operations": [
+        {
+          "CopyDir": {
+            "path": ".proplate_aux_utils/dir",
+            "dest": "src/copied-dir"
+          }
+        }
+      ]
+    }
+  ]
+}
