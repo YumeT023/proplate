@@ -69,10 +69,12 @@ fn run_isolated_test(f: impl Fn() -> ProplateResult<()>, _clean: bool) {
   // clean.then(|| cleanup_test_trash());
 }
 
+// TODO: some op are weird
 fn assert_dir_superset(dir1: &Path, dir2: &Path) -> std::io::Result<()> {
   for (file, relative) in walk_dir(dir1)? {
-    let a = fs::read_to_string(&file)?;
-    let b = fs::read_to_string(dir2.join(&relative))?;
+    let a = fs::read_to_string(&file).expect(format!("Fail {}", file.display()).as_str());
+    let b = fs::read_to_string(dir2.join(&relative))
+      .expect(format!("Fail {}", dir2.join(&relative).display()).as_str());
     assert_eq!(a, b);
   }
   Ok(())
