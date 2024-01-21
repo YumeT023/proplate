@@ -71,12 +71,12 @@ jobs:
           command: |
             COMMIT_MESSAGE=$(git log -1 --pretty=%B)
 
-            if [[ "$COMMIT_MESSAGE" != *"release"* ]]; then
-              echo "No 'release' in commit message, skipping release."
-              exit 0
-            else
+            if [[ "$COMMIT_MESSAGE" =~ ^(chore: bump|release:|publish:) ]]; then
               VERSION=$(echo $COMMIT_MESSAGE | awk '{print $2}')
               ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace $VERSION ./build
+            else
+              echo "Skipping release"
+              exit 0
             fi
 
 workflows:
