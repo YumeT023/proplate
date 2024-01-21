@@ -184,7 +184,7 @@ You are free to create as many files as desired and add the bindings, **Proplate
 
 Sometimes, you want to do things beyond just replacing dynamic files. Well, Proplate's got you covered.
 
-At the moment, proplate supports 2 basic `fs` operation: `Remove`, `Copy`
+At the moment, proplate supports 2 basic `fs` operation: `Remove`, `Copy`, `CopyDir`
 
 these operations are enumerated under `"additional_operations"`
 
@@ -304,3 +304,8 @@ can't we just run some bash script-uh ? ... for your own security, **NO**
     ```
 
 - `"args"`: Input of type `Text` may have a "default_value" prop, which proplate will use as a placeholder
+
+- `"additional_op"` op list:
+  - _Copy { file, dest }_
+  - _CopyDir { path, dest }_
+  - _Remove { files }_
