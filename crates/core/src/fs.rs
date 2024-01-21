@@ -15,7 +15,7 @@ pub fn copy_fdir(entry: &Path, dest: &Path, except: Option<Vec<PathBuf>>) -> std
     if let Some(parent) = to.parent() {
       fs::create_dir_all(&parent)?;
     }
-    fs::copy(&file, &to).expect(format!("copy: {}\n{}\n\n", file.display(), to.display()).as_str());
+    fs::copy(&file, &to)?;
   }
   Ok(())
 }

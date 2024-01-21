@@ -67,7 +67,8 @@ impl Execute for Operation {
       Operation::CopyDir { path, dest } => {
         let path = Path::new(path);
         let dest = Path::new(dest);
-        pfs::copy_fdir(path, dest, None).expect("copy_dir");
+        pfs::copy_fdir(path, dest, None)
+          .map_err(|e| ProplateError::fs(&e.to_string(), vec![path, dest]))?;
         Ok(())
       }
       Operation::Remove { files } => {
