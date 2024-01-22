@@ -10,6 +10,7 @@ use crate::fs as pfs;
 pub enum StringCompareOp {
   Eq,
   NotEqual,
+  Contains,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -40,6 +41,7 @@ impl Condition {
     match self.op {
       StringCompareOp::Eq => self.lhs == self.rhs,
       StringCompareOp::NotEqual => self.lhs != self.rhs,
+      StringCompareOp::Contains => self.lhs.contains(&self.rhs),
     }
   }
 
