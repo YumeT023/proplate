@@ -8,8 +8,10 @@ use crate::{
 use proplate_errors::{ProplateError, ProplateResult};
 use proplate_tui::logger;
 
+/// typealias for template ctx
 pub type Context = HashMap<String, String>;
 
+/// Processes the given `template` using the `ctx` and outputs the result to `dest` directory
 pub fn bootstrap(template: &mut Template, dest: &str, ctx: &Context) -> ProplateResult<()> {
   (|| -> ProplateResult<()> {
     process_template(template, ctx)?;
