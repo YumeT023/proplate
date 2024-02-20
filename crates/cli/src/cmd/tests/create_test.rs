@@ -1,11 +1,11 @@
 #[cfg(test)]
 mod exclude_files {
-  use crate::cmd::create::{create, CreateOptions};
   use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
   use crate::{assert_gen_ok, test_create};
 
   use std::collections::HashMap;
 
+  use proplate_core::gen::bootstrap::bootstrap;
   use proplate_core::template::resolver::clone_template;
   use proplate_core::template::META_CONF;
 
@@ -30,12 +30,12 @@ mod exclude_files {
 
 #[cfg(test)]
 mod dynamic_files {
-  use crate::cmd::create::{create, CreateOptions};
   use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
   use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
 
   use std::collections::HashMap;
 
+  use proplate_core::gen::bootstrap::bootstrap;
   use proplate_core::template::{resolver::clone_template, META_CONF};
 
   #[test]
@@ -126,12 +126,12 @@ mod dynamic_files {
 
 #[cfg(test)]
 mod additional_ops {
-  use crate::cmd::create::{create, CreateOptions};
   use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
   use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
 
   use std::collections::HashMap;
 
+  use proplate_core::gen::bootstrap::bootstrap;
   use proplate_core::template::{resolver::clone_template, META_CONF};
 
   #[test]
