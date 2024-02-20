@@ -111,7 +111,7 @@ macro_rules! test_create {
     let (t, snap) = get_sample($pkg, $name);
 
     let mut fork = clone_template(t.display().to_string().as_str(), &dest)?;
-    create(&mut fork, &dest, CreateOptions::default(), &$ctx)?;
+    bootstrap(&mut fork, &dest, &$ctx)?;
 
     (path, snap)
   }};
