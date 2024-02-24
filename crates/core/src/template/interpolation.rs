@@ -1,5 +1,6 @@
 use regex::Regex;
-use std::collections::HashMap;
+
+use crate::gen::bootstrap::Context;
 
 const INTERPOLATION_PATTERN: &str = r"(\\*)\$([a-zA-Z_][a-zA-Z0-9_]*)\b";
 
@@ -15,7 +16,7 @@ fn create_regex() -> Regex {
 /// ctx.insert("name".to_string(), "proplate".to_string());
 /// println!("{}", provide_ctx("Hello $name", Some(ctx))) // "Hello proplate"
 /// ````
-fn provide_ctx(source: &str, ctx: &HashMap<String, String>) -> String {
+pub fn interpolate(source: &str, ctx: &Context) -> String {
   let re = create_regex();
 
   let mut result = String::new();
@@ -48,12 +49,13 @@ fn provide_ctx(source: &str, ctx: &HashMap<String, String>) -> String {
   result
 }
 
-pub trait MapWithCtx {
-  fn map_with_ctx(&self, ctx: &HashMap<String, String>) -> Self;
+pub trait Interpolate {
+  fn interpolate(&self, ctx: &Context) -> Self;
 }
 
-impl MapWithCtx for String {
-  fn map_with_ctx(&self, ctx: &HashMap<String, String>) -> Self {
-    provide_ctx(self, ctx)
+/// Allow to use
+impl Interpolate for String {
+  fn interpolate(&self, ctx: &Context) -> Self {
+    interpolate(self, ctx)
   }
 }

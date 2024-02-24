@@ -3,7 +3,7 @@ use std::{collections::HashMap, fs, path::Path};
 use proplate_errors::{ProplateError, ProplateResult};
 use serde::{Deserialize, Serialize};
 
-use super::interpolation::MapWithCtx;
+use super::interpolation::Interpolate;
 use crate::fs as pfs;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -45,8 +45,8 @@ impl Condition {
 
   pub fn eval_in_ctx(&self, ctx: &HashMap<String, String>) -> bool {
     let mut c = self.clone();
-    c.lhs = c.lhs.map_with_ctx(ctx);
-    c.rhs = c.rhs.map_with_ctx(ctx);
+    c.lhs = c.lhs.interpolate(ctx);
+    c.rhs = c.rhs.interpolate(ctx);
     c.eval()
   }
 }
