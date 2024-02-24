@@ -1,6 +1,6 @@
 use inquire::{error::InquireResult, Select, Text};
 
-use super::config::{JSONArg, JSONArgType};
+use super::config::{Arg, ArgType};
 
 use proplate_errors::ProplateError;
 use proplate_tui::logger::AsError;
@@ -45,17 +45,17 @@ impl<'a> Input<'a> {
   }
 }
 
-impl<'a> From<&'a JSONArg> for Input<'a> {
-  fn from(value: &'a JSONArg) -> Self {
+impl<'a> From<&'a Arg> for Input<'a> {
+  fn from(value: &'a Arg) -> Self {
     match value.q_type {
-      JSONArgType::Text => {
+      ArgType::Text => {
         let attr = InputAttr {
           default: value.default_value.clone(),
           name: value.key.clone(),
         };
         Input::Text(Text::new(&value.label), attr)
       }
-      JSONArgType::Select => {
+      ArgType::Select => {
         let options = value.options.clone().unwrap_or_default();
         let attr = InputAttr {
           default: None,

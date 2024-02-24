@@ -14,15 +14,15 @@ use super::{
 };
 
 #[derive(Serialize, Deserialize, Debug)]
-pub enum JSONArgType {
+pub enum ArgType {
   Text,
   Select,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct JSONArg {
+pub struct Arg {
   pub key: String,
-  pub q_type: JSONArgType,
+  pub q_type: ArgType,
   pub label: String,
   pub default_value: Option<String>,
   /// Only used when "key" equals "Select."
@@ -38,7 +38,7 @@ pub struct TemplateConf {
   #[serde(default = "Vec::new")]
   pub exclude: Vec<String>,
   /// Arguments that Proplate will ask when a project is created using the associated template
-  pub args: Vec<JSONArg>,
+  pub args: Vec<Arg>,
   /// List of files containing dynamic variables
   /// used by Proplate to prevent having to go through every template file
   #[serde(default = "Vec::new")]
