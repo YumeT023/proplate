@@ -2,7 +2,7 @@ use std::{collections::HashMap, fs, path::Path};
 
 use crate::{
   fs as pfs,
-  template::{config::analyze_dyn_files, interpolation::MapWithCtx, op::Execute, Template},
+  template::{config::analyze_dyn_files, interpolation::Interpolate, op::Execute, Template},
 };
 
 use proplate_errors::{ProplateError, ProplateResult};
@@ -56,7 +56,7 @@ pub fn process_template(template: &mut Template, ctx: &Context) -> ProplateResul
 
 /// Replaces dynamic var "$var" with their actual value
 pub fn bind_ctx_to_file(path: &Path, ctx: &Context) {
-  match pfs::map_file(path, |s| s.to_string().map_with_ctx(ctx)) {
+  match pfs::map_file(path, |s| s.to_string().interpolate(ctx)) {
     Err(_) => {
       // TODO: warn if not found but wasn't removed in additional_op either
     }
