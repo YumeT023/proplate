@@ -12,9 +12,11 @@ fn create_regex() -> Regex {
 ///
 /// # Example
 /// ```
-/// let mut ctx = HashMap::new();
+/// use proplate_core::{gen::bootstrap::Context, template::interpolation::interpolate};
+///
+/// let mut ctx = Context::new();
 /// ctx.insert("name".to_string(), "proplate".to_string());
-/// println!("{}", provide_ctx("Hello $name", Some(ctx))) // "Hello proplate"
+/// println!("{}", interpolate("Hello $name", &ctx)); // "Hello proplate"
 /// ````
 pub fn interpolate(source: &str, ctx: &Context) -> String {
   let re = create_regex();

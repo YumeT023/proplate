@@ -10,12 +10,8 @@ use std::{
 ///
 /// For the file ".proplate_aux_utils\.gitkeep", WalkdirPathBuf would look like
 ///
-/// ```
-/// (
-///  r#"C:\Users\proplate\samples\exclude_files\ban-node-modules\.proplate_aux_utils\.gitkeep"#,
-///  ".proplate_aux_utils\.gitkeep"
-/// )
-/// ```
+///  r#"C:\Users\proplate\samples\exclude_files\ban-node-modules\.proplate_aux_utils\.gitkeep"#
+///  r#".proplate_aux_utils\.gitkeep"#
 pub type WalkdirPathBuf = (/*abs*/ PathBuf, /*relative*/ PathBuf);
 
 struct WalkDir {
