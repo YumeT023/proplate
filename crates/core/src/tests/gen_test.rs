@@ -1,13 +1,14 @@
 #[cfg(test)]
 mod exclude_files {
-  use crate::cmd::tests::{get_sample, new_trash, run_isolated_test};
-  use crate::{assert_gen_ok, test_create};
-
   use std::collections::HashMap;
 
-  use proplate_core::gen::bootstrap::bootstrap;
-  use proplate_core::template::resolver::clone_template;
-  use proplate_core::template::META_CONF;
+  use crate::{
+    assert_gen_ok,
+    gen::bootstrap::bootstrap,
+    template::{resolver::clone_template, META_CONF},
+    test_create,
+    tests::{get_sample, new_trash, run_isolated_test},
+  };
 
   #[test]
   fn ban() {
@@ -30,13 +31,15 @@ mod exclude_files {
 
 #[cfg(test)]
 mod dynamic_files {
-  use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
-  use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
-
   use std::collections::HashMap;
 
-  use proplate_core::gen::bootstrap::bootstrap;
-  use proplate_core::template::{resolver::clone_template, META_CONF};
+  use crate::{
+    assert_gen_ok, assert_gen_snapshot,
+    gen::bootstrap::bootstrap,
+    template::{resolver::clone_template, META_CONF},
+    test_create,
+    tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test},
+  };
 
   #[test]
   fn empty_dyn_file() {
@@ -126,13 +129,15 @@ mod dynamic_files {
 
 #[cfg(test)]
 mod additional_ops {
-  use crate::cmd::tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test};
-  use crate::{assert_gen_ok, assert_gen_snapshot, test_create};
-
   use std::collections::HashMap;
 
-  use proplate_core::gen::bootstrap::bootstrap;
-  use proplate_core::template::{resolver::clone_template, META_CONF};
+  use crate::{
+    assert_gen_ok, assert_gen_snapshot,
+    gen::bootstrap::bootstrap,
+    template::{resolver::clone_template, META_CONF},
+    test_create,
+    tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test},
+  };
 
   #[test]
   fn unlicensed() {
