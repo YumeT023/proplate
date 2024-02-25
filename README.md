@@ -35,8 +35,20 @@ Give up setting up the environment each time you begin a project using the same 
 
 Prerequisites: [git](https://git-scm.com/downloads)
 
+#### Github release
+
 You can download it from the [release](https://github.com/YumeT023/proplate/releases/tag/0.3.0) page.<br>
 I recommend making it globally available in your terminal. <u>(wip: install.sh)</u>
+
+#### Cargo
+
+If you have cargo installed
+
+```shell
+cargo install proplate
+```
+
+> cargo will make it directly available in your $PATH
 
 ## Use a template to create a project
 
