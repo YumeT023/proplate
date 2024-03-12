@@ -80,8 +80,6 @@ pub fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
 
   println!("{}", logger::step("Copying..."));
 
-  println!("exclude: {:?}", template.conf.exclude);
-
   pfs::copy_fdir(
     src,
     dest,

@@ -77,14 +77,8 @@ fn parse_config(meta_json: &str) -> TemplateConf {
 }
 
 fn normalize(config: &mut TemplateConf, base: &Path) {
-  println!("before {:?}", config.exclude);
-  println!("before keep {}", config.keep_meta);
-
   set_exclude_files(config, base);
   set_additional_ops_files(config, base);
-
-  println!("after {:?}", config.exclude);
-  println!("after keep {}", config.keep_meta);
 
   config.require_dyn_file_analysis = true;
   // Avoid unnecessary analysis
