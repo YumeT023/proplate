@@ -1,0 +1,17 @@
+{
+  "id": "tiniest",
+  "args": [],
+  "keep_meta": true,
+  "additional_operations": [
+    {
+      "operations": [
+        {
+          "Copy": {
+            "file": ".proplate_aux_utils/meta.json",
+            "dest": "meta.json"
+          }
+        }
+      ]
+    }
+  ]
+}

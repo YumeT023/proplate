@@ -1,5 +1,8 @@
 use clap::{arg, Command};
-use cmd::create::{create, CreateOptions};
+use cmd::{
+  create::{create, CreateOptions},
+  init::init,
+};
 
 mod cmd;
 
@@ -20,7 +23,7 @@ fn cli() -> Command {
     
 Any Project starter in one tool"#,
     )
-    .subcommand(
+    .subcommands([
       Command::new("create")
         .about("create project from template")
         .args(&[
@@ -29,7 +32,11 @@ Any Project starter in one tool"#,
           arg!(--dest <dest> "Destination path").required(true),
           arg!(--git  "Initialize git repo"),
         ]),
-    )
+      Command::new("init").about("initialize a template").args(&[
+        arg!(<id> "id for the template").required(true),
+        arg!(--dest <dest> "Destination path, if not set dir with 'id' will be created"),
+      ]),
+    ])
 }
 
 fn main() -> Result<(), clap::Error> {
@@ -54,6 +61,12 @@ fn main() -> Result<(), clap::Error> {
           )
           .as_str(),
         )
+      }
+      ("init", args) => {
+        let id = args.get_one::<String>("id").unwrap();
+        let dest = args.get_one::<String>("dest");
+        init(String::from(id), dest.map(|e| e.into()))
+          .expect(format!("Unable to initialize template [id={}]", id,).as_str());
       }
       _ => {}
     },
