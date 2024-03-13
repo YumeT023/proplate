@@ -1,29 +1,22 @@
 use std::{
   env::current_exe,
   path::{Path, PathBuf},
-  process::exit,
 };
 
-use proplate_tui::logger::error;
-
-const NO_BUILTIN_DIR_ERROR_MSG: &str = r#"You havent installed 'proplate' through gh release, its missing 'builtin' dir which is used to initialize new template locally
-   Instead, do `proplate create --template https://github.com/YumeT023/tiniest-proplate`"#;
+use proplate_errors::{ProplateError, ProplateResult};
 
 pub fn local_template_path() -> PathBuf {
   proplate_dir().join("builtins").join("templates")
 }
 
-pub fn get_local_template<P>(path: P) -> PathBuf
+pub fn get_local_template<P>(path: P) -> ProplateResult<PathBuf>
 where
   P: AsRef<Path>,
 {
-  let path = local_template_path().join(path);
-  match path.exists() {
-    true => path,
-    _ => {
-      eprintln!("{}", error(NO_BUILTIN_DIR_ERROR_MSG));
-      exit(1);
-    }
+  let tpath = local_template_path().join(path);
+  match tpath.exists() {
+        true => Ok(tpath),
+        _ => Err(ProplateError::local_template_not_found(tpath.display().to_string().as_str()))
   }
 }
 
