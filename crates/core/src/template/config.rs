@@ -94,7 +94,7 @@ fn set_exclude_files(config: &mut TemplateConf, base: &Path) {
   let files = &mut config.exclude;
 
   // Always exclude '.proplate_aux_utils' folder
-  files.push(".proplate_aux_utils".into());
+  files.extend([".proplate_aux_utils".into(), ".git".into()]);
 
   if !config.keep_meta {
     files.push(META_CONF.into());
