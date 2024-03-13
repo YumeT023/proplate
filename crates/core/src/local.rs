@@ -15,8 +15,10 @@ where
 {
   let tpath = local_template_path().join(path);
   match tpath.exists() {
-        true => Ok(tpath),
-        _ => Err(ProplateError::local_template_not_found(tpath.display().to_string().as_str()))
+    true => Ok(tpath),
+    _ => Err(ProplateError::local_template_not_found(
+      tpath.display().to_string().as_str(),
+    )),
   }
 }
 
