@@ -2,8 +2,7 @@
   "index": {
     "title": "Introduction",
     "theme": {
-      "typesetting": "article",
-      "breadcrumb": false,
+      "breadcrumb": true,
       "toc": false
     }
   }
