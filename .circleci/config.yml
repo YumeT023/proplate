@@ -32,31 +32,50 @@ jobs:
       - checkout
 
       - when:
-          condition: << parameters.requires_mingw >>
+          condition: <<parameters.requires_mingw>>
           steps:
             - run: sudo apt-get update
             - run: sudo apt-get upgrade -y
             - run: sudo apt-get install mingw-w64
 
       - run:
-          name: Install target << parameters.target >>
-          command: rustup target add << parameters.target >>
+          name: Install target <<parameters.target>>
+          command: rustup target add <<parameters.target>>
 
       - run:
           name: Build
-          command: cargo build --release --target=<< parameters.target >>
+          command: cargo build --release --target=<<parameters.target>>
 
       - run:
           name: Package
           command: | # we want the archive to directly contain the executable
-            mkdir -p build
-            cd target/<< parameters.target >>/release
-            zip -r ../../../build/<< parameters.target >>.zip {proplate,proplate.exe}
+            mkdir -p assets
+            mkdir -p <<parameters.target>>
 
+            # Copies executables and builtins
+            find target/<<parameters.target>>/release -maxdepth 1 \( -name 'proplate' -o -name 'proplate.exe' \) -exec cp -p {} <<parameters.target>> \;
+            cp -r builtins <<parameters.target>>
+
+            zip -r assets/<<parameters.target>>.zip <<parameters.target>>
       - persist_to_workspace:
           root: .
           paths:
-            - "build"
+            - "assets"
+
+  pack-builtins:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run:
+          name: zip `builtins` in build assets
+          command: |
+            mkdir -p assets
+            zip -r assets/builtins.zip builtins
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "assets"
 
   publish-release:
     docker:
@@ -73,12 +92,11 @@ jobs:
 
             if [[ "$COMMIT_MESSAGE" =~ ^(chore\(bump\):|release:|publish:) ]]; then
               VERSION=$(echo $COMMIT_MESSAGE | awk '{print $2}')
-              ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace "proplate-v$VERSION" ./build
+              ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME -replace "proplate-v$VERSION" ./assets
             else
               echo "Skipping release"
               exit 0
             fi
-
 workflows:
   ci:
     jobs:
@@ -94,7 +112,12 @@ workflows:
       - build-target:
           name: Build x86_64-unknown-linux-musl
           target: x86_64-unknown-linux-musl
+      - pack-builtins:
+          name: Pack builtins
       - publish-release:
           requires:
             - Build x86_64-pc-windows-gnu
             - Build x86_64-unknown-linux-musl
+            - Pack builtins
+
+

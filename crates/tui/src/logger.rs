@@ -12,6 +12,10 @@ pub fn error(s: &str) -> String {
   format!("{}", s.red())
 }
 
+pub fn warn(s: &str) -> String {
+  format!("{}", s.bright_yellow())
+}
+
 pub fn success(s: &str) -> String {
   format!("\n{}", s.bright_green())
 }

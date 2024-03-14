@@ -46,6 +46,9 @@ pub struct TemplateConf {
   #[serde(default = "Vec::new")]
   pub additional_operations: Vec<AdditionalOperation>,
 
+  #[serde(default = "TemplateConf::default_keep_meta")]
+  pub keep_meta: bool,
+
   /// Prevent examining dyn files repeatedly.
   #[serde(skip)]
   pub require_dyn_file_analysis: bool,
@@ -60,6 +63,10 @@ impl TemplateConf {
     normalize(&mut config, path);
 
     config
+  }
+
+  fn default_keep_meta() -> bool {
+    false
   }
 }
 
@@ -86,8 +93,13 @@ fn normalize(config: &mut TemplateConf, base: &Path) {
 fn set_exclude_files(config: &mut TemplateConf, base: &Path) {
   let files = &mut config.exclude;
 
-  // Always exclude meta.json and .proplate_aux_utils
-  files.extend([".proplate_aux_utils".into(), META_CONF.into()]);
+  // Always exclude '.proplate_aux_utils' folder
+  files.extend([".proplate_aux_utils".into(), ".git".into()]);
+
+  if !config.keep_meta {
+    files.push(META_CONF.into());
+  }
+
   to_relative_all(files, base);
 }
 
