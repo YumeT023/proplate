@@ -1,0 +1,10 @@
+{
+  "index": {
+    "title": "Introduction",
+    "theme": {
+      "typesetting": "article",
+      "breadcrumb": false,
+      "toc": false
+    }
+  }
+}

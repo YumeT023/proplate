@@ -9,3 +9,38 @@
 # tmp
 .temp
 test_trash
+
+
+# Logs
+docs/node_modules
+docs/.next
+docs/logs
+docs/*.log
+docs/npm-debug.log*
+docs/yarn-debug.log*
+docs/yarn-error.log*
+docs/pnpm-debug.log*
+docs/lerna-debug.log*
+
+docs/node_modules
+docs/dist
+docs/dist-ssr
+docs/*.local
+
+# Editor directories and files
+docs/.vscode/*
+docs/!.vscode/extensions.json
+docs/.idea
+docs/.DS_Store
+docs/*.suo
+docs/*.ntvs*
+docs/*.njsproj
+docs/*.sln
+docs/*.sw?
+
+# env
+docs/.env
+
+# Coverage
+docs/.nyc_output
+docs/coverage
