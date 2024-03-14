@@ -32,9 +32,9 @@ fn get_trash() -> PathBuf {
   get_path("test_trash")
 }
 
-fn get_sample(pkg: &str, name: &str) -> (PathBuf, PathBuf /*snapshot*/) {
+fn get_fixture(pkg: &str, name: &str) -> (PathBuf, PathBuf /*snapshot*/) {
   let path = get_path(
-    join_path!("samples", pkg, name)
+    join_path!("fixtures", pkg, name)
       .display()
       .to_string()
       .as_str(),
@@ -108,7 +108,7 @@ macro_rules! test_create {
     let (path, _uuid) = new_trash();
     let dest = path.display().to_string();
 
-    let (t, snap) = get_sample($pkg, $name);
+    let (t, snap) = get_fixture($pkg, $name);
 
     let mut fork = clone_template(t.display().to_string().as_str(), &dest)?;
     bootstrap(&mut fork, &dest, &$ctx)?;

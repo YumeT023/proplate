@@ -7,7 +7,7 @@ mod exclude_files {
     gen::bootstrap::bootstrap,
     template::{resolver::clone_template, META_CONF},
     test_create,
-    tests::{get_sample, new_trash, run_isolated_test},
+    tests::{get_fixture, new_trash, run_isolated_test},
   };
 
   #[test]
@@ -38,7 +38,7 @@ mod dynamic_files {
     gen::bootstrap::bootstrap,
     template::{resolver::clone_template, META_CONF},
     test_create,
-    tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test},
+    tests::{assert_dir_superset, get_fixture, new_trash, run_isolated_test},
   };
 
   #[test]
@@ -136,7 +136,7 @@ mod additional_ops {
     gen::bootstrap::bootstrap,
     template::{resolver::clone_template, META_CONF},
     test_create,
-    tests::{assert_dir_superset, get_sample, new_trash, run_isolated_test},
+    tests::{assert_dir_superset, get_fixture, new_trash, run_isolated_test},
   };
 
   #[test]
@@ -151,7 +151,7 @@ mod additional_ops {
 
         let (path, _) = test_create!("additional_ops", "conditional-license", ctx);
         // we got custom snap path here
-        let (snap, _) = get_sample("additional_ops", "unlicensed-snapshot");
+        let (snap, _) = get_fixture("additional_ops", "unlicensed-snapshot");
 
         assert_gen_ok!(&path);
         assert_gen_snapshot!(&snap, &path);
@@ -174,7 +174,7 @@ mod additional_ops {
 
         let (path, _) = test_create!("additional_ops", "conditional-license", ctx);
         // we got custom snap path here
-        let (snap, _) = get_sample("additional_ops", "bsd-2-clause-license-snapshot");
+        let (snap, _) = get_fixture("additional_ops", "bsd-2-clause-license-snapshot");
 
         assert_gen_ok!(&path);
         assert_gen_snapshot!(&snap, &path);
@@ -197,7 +197,7 @@ mod additional_ops {
 
         let (path, _) = test_create!("additional_ops", "conditional-license", ctx);
         // we got custom snap path here
-        let (snap, _) = get_sample("additional_ops", "mit-license-snapshot");
+        let (snap, _) = get_fixture("additional_ops", "mit-license-snapshot");
 
         assert_gen_ok!(&path);
         assert_gen_snapshot!(&snap, &path);
