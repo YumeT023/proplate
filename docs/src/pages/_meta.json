@@ -5,5 +5,11 @@
       "breadcrumb": true,
       "toc": false
     }
-  }
+  },
+  "getting-started": "Getting started",
+  "--": {
+    "type": "separator"
+  },
+  "cli-commands": "CLI Commands",
+  "reference": "Reference"
 }
