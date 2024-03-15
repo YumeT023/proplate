@@ -1,6 +1,7 @@
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
+import { useConfig } from "nextra-theme-docs";
 
-export const Logo = () => {
+const Logo = () => {
   return (
     <h1 className="flex flex-row items-baseline text-2xl font-bold">
       <span className="tracking-tight hover:cursor-pointer light:text-black">
@@ -11,11 +12,37 @@ export const Logo = () => {
   );
 };
 
+const Head = () => {
+  const { asPath, defaultLocale, locale } = useRouter();
+  const { frontMatter } = useConfig();
+  const url =
+    "https://proplate.vercel.app" +
+    (defaultLocale === locale ? asPath : `/${locale}${asPath}`);
+
+  return (
+    <>
+      <meta property="og:url" content={url} />
+      <meta
+        property="og:title"
+        content={frontMatter.title || "proplate lazy gen devtools"}
+      />
+      <meta
+        property="og:description"
+        content={
+          frontMatter.description ||
+          "Docs for the best tools to begin your project with"
+        }
+      />
+    </>
+  );
+};
+
 /**
  * @type {import('nextra-theme-docs').DocsThemeConfig}
  */
 const config = {
   logo: Logo,
+  head: Head,
   darkMode: true,
   primaryHue: 44,
   nextThemes: {
