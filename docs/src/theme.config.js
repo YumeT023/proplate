@@ -1,5 +1,5 @@
-import { useRouter } from "next/router";
-import { useConfig } from "nextra-theme-docs";
+import {useRouter} from "next/router";
+import {useConfig} from "nextra-theme-docs";
 
 const Logo = () => {
   return (
@@ -11,6 +11,7 @@ const Logo = () => {
     </h1>
   );
 };
+
 
 const Head = () => {
   const { asPath, defaultLocale, locale } = useRouter();
@@ -24,13 +25,12 @@ const Head = () => {
       <meta property="og:url" content={url} />
       <meta
         property="og:title"
-        content={frontMatter.title || "proplate lazy gen devtools"}
+        content={frontMatter.title || "Proplate - Lazy gen devtools"}
       />
       <meta
         property="og:description"
         content={
-          frontMatter.description ||
-          "Docs for the best tools to begin your project with"
+          frontMatter.description || "Docs for the best tools to begin your project with"
         }
       />
     </>
