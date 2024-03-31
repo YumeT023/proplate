@@ -1,6 +1,7 @@
-use std::{fmt::Display, path::PathBuf};
+use std::{fmt::Display, path::PathBuf, process::exit};
 
-use proplate_tui::logger;
+use proplate_errors::{ProplateError, ProplateErrorKind, TemplateErrorKind};
+use proplate_tui::logger::AsError;
 
 use self::config::TemplateConf;
 
@@ -17,7 +18,7 @@ pub struct Template {
   pub base_path: PathBuf,
   pub base_file_list: Vec<String>,
   /// Github repo if he template is from github
-  pub fork_source: Option<String>,
+  pub fork_source: String,
   pub conf: TemplateConf,
 }
 
@@ -37,9 +38,9 @@ impl Template {
     id: String,
     base_path: PathBuf,
     base_file_list: Vec<String>,
-    fork_source: Option<String>,
+    fork_source: String,
   ) -> Template {
-    Template::validate_template_filebase(&base_file_list);
+    Template::validate_template_filebase(&base_file_list, fork_source.clone());
     Template {
       id,
       base_path: base_path.clone(),
@@ -51,7 +52,7 @@ impl Template {
 
   /// Validates main files
   /// Namely ensures that meta.json is present
-  fn validate_template_filebase(files: &Vec<String>) {
+  fn validate_template_filebase(files: &Vec<String>, location: String) {
     let mut violations = Vec::<String>::new();
 
     if !files.contains(&META_CONF.to_string()) {
@@ -59,7 +60,16 @@ impl Template {
     }
 
     if !violations.is_empty() {
-      panic!("Error\n{}", logger::error(&violations.join("\n")))
+      eprintln!(
+        "{}",
+        ProplateError::create(ProplateErrorKind::Template {
+          kind: TemplateErrorKind::NoConfig,
+          location
+        })
+        .with_ctx("template:validate")
+        .print_err()
+      );
+      exit(1);
     }
   }
 }

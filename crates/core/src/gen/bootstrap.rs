@@ -5,7 +5,7 @@ use crate::{
   template::{config::analyze_dyn_files, interpolation::Interpolate, op::Execute, Template},
 };
 
-use proplate_errors::{ProplateError, ProplateResult};
+use proplate_errors::{ProplateError, ProplateErrorKind, ProplateResult};
 use proplate_tui::logger;
 
 /// typealias for template ctx
@@ -67,8 +67,14 @@ pub fn bind_ctx_to_file(path: &Path, ctx: &Context) {
 /// Create project dest dir
 fn prepare_dest(dest: &str) -> ProplateResult<()> {
   println!("{}", logger::title("Finalizing"));
-  fs::create_dir_all(dest)
-    .map_err(|e| ProplateError::fs(&format!("{}", e.to_string()), vec![Path::new(&dest)]))?;
+  fs::create_dir_all(dest).map_err(|e| {
+    ProplateError::create(ProplateErrorKind::Fs {
+      concerned_paths: vec![dest.into()],
+      operation: "create_dir_all".into(),
+    })
+    .with_ctx("gen:bootstrap:prepare")
+    .with_cause(&e.to_string())
+  })?;
   Ok(())
 }
 
@@ -93,16 +99,24 @@ pub fn copy_files(template: &Template, dest: &str) -> ProplateResult<()> {
     ),
   )
   .map_err(|e| {
-    ProplateError::fs(
-      &format!("{}", e.to_string()),
-      vec![&template.base_path, Path::new(&dest)],
-    )
+    ProplateError::create(ProplateErrorKind::Fs {
+      concerned_paths: vec![src.display().to_string(), dest.display().to_string()],
+      operation: "copy_fdir".into(),
+    })
+    .with_ctx("gen:bootstrap:copy_files")
+    .with_cause(&e.to_string())
   })
 }
 
 pub fn cleanup(template: &Template) -> ProplateResult<()> {
   println!("{}", logger::step("cleaning up..."));
-  fs::remove_dir_all(&template.base_path)
-    .map_err(|_| ProplateError::fs("unable to cleanup tmp...", vec![&template.base_path]))?;
+  fs::remove_dir_all(&template.base_path).map_err(|e| {
+    ProplateError::create(ProplateErrorKind::Fs {
+      concerned_paths: vec![template.base_path.display().to_string()],
+      operation: "remove_dir_all".into(),
+    })
+    .with_ctx("gen:bootstrap:cleanup")
+    .with_cause(&e.to_string())
+  })?;
   Ok(())
 }

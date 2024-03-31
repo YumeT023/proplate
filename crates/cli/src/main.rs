@@ -3,6 +3,7 @@ use cmd::{
   create::{create, CreateOptions},
   init::init,
 };
+use proplate_tui::logger::AsError;
 
 mod cmd;
 
@@ -54,13 +55,9 @@ fn main() -> Result<(), clap::Error> {
           ..Default::default()
         };
 
-        create(template_id, dest, options).expect(
-          format!(
-            "Unable to create boilerplate from Template [{}]",
-            template_id
-          )
-          .as_str(),
-        )
+        if let Err(e) = create(template_id, dest, options) {
+          eprint!("{}", e.print_err())
+        }
       }
       ("init", args) => {
         let id = args.get_one::<String>("id").unwrap();

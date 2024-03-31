@@ -1,9 +1,11 @@
+use std::process::exit;
+
 use inquire::{error::InquireResult, Select, Text};
+use proplate_tui::logger::AsError;
 
 use super::config::{Arg, ArgType};
 
-use proplate_errors::ProplateError;
-use proplate_tui::logger::AsError;
+use proplate_errors::{CliErrorKind, ProplateError, ProplateErrorKind};
 
 /// For mapping input attribute internally
 pub struct InputAttr {
@@ -21,7 +23,17 @@ impl<'a> Input<'a> {
   fn handle_prompt(result: InquireResult<String>) -> String {
     match result {
       Ok(t) => t,
-      Err(e) => panic!("{}", ProplateError::prompt(&e.to_string()).print_err()),
+      Err(e) => {
+        // is it really necessary to handle the error here ? if no, return Result<String> then
+        // handle it there
+        eprintln!(
+          "{}",
+          ProplateError::create(ProplateErrorKind::Cli(CliErrorKind::Prompt))
+            .with_cause(&e.to_string())
+            .print_err()
+        );
+        exit(1);
+      }
     }
   }
 
