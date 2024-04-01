@@ -57,7 +57,7 @@ pub struct TemplateConf {
 impl TemplateConf {
   pub fn new(path: &Path) -> TemplateConf {
     let conf = path.join(META_CONF);
-    let meta_json = fs::read_to_string(conf).expect("meta.json can't be located or locked");
+    let meta_json = fs::read_to_string(conf).unwrap();
     let mut config = parse_config(&meta_json, path.display().to_string().as_str());
 
     normalize(&mut config, path);
