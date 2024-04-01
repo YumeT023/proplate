@@ -109,32 +109,30 @@ impl AsError for ProplateError {
         concerned_paths,
         operation,
       } => format!(
-        r#"op '{}' cannot be done, concerned paths are:
-                {}"#,
+        "op '{}' cannot be done\n\nConcerned paths are:\n\n{}",
         operation,
-        concerned_paths.join("\n")
+        concerned_paths
+          .iter()
+          .map(|p| format!("- {}", p))
+          .collect::<Vec<_>>()
+          .join("\n")
       ),
 
-      ProplateErrorKind::Git { cmd, raw_stderr } => format!(
-        r#"command '{}' failed with git err:
-            {}"#,
-        cmd, raw_stderr
-      ),
+      ProplateErrorKind::Git { cmd, raw_stderr } => {
+        format!("command '{}' failed with git err:\n\n{}", cmd, raw_stderr)
+      }
     };
 
     let kind = format!("Error: `{}`", self.kind.to_string());
     let ctx = match self.ctx.clone() {
-      Some(_ctx) => format!("Where: {}", &_ctx.bold()),
+      Some(_ctx) => format!("\n\nCtx: {}", &_ctx.bold()),
       _ => "".into(),
     };
     let cause = match self.cause.clone() {
-      Some(_cause) => format!("Cause:\n{}", &_cause).red().to_string(),
+      Some(_cause) => format!("\n\nCause:\n{}", &_cause).red().to_string(),
       _ => "".into(),
     };
 
-    logger::error(&format!(
-      "\n{}\n{}\n\n{}\n\n{}",
-      kind, contextual, ctx, cause,
-    ))
+    logger::error(&format!("\n{kind}\n{contextual}{ctx}{cause}"))
   }
 }

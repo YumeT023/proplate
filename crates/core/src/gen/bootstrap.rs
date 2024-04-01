@@ -21,7 +21,9 @@ pub fn bootstrap(template: &mut Template, dest: &str, ctx: &Context) -> Proplate
     Ok(())
   })()
   .map_err(|e| -> ProplateError {
-    cleanup(template).expect("Unable to cleanup");
+    if let Err(_) = cleanup(template) {
+      logger::warn("Unable to cleanup");
+    }
     e
   })
 }
