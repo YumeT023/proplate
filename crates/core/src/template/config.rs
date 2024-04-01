@@ -4,7 +4,7 @@ use std::{
   path::{Path, PathBuf},
 };
 
-use proplate_errors::ProplateError;
+use proplate_errors::{ProplateError, ProplateErrorKind, TemplateErrorKind};
 
 use crate::fs::walk::{walk_dir, walk_dir_skip};
 
@@ -57,8 +57,8 @@ pub struct TemplateConf {
 impl TemplateConf {
   pub fn new(path: &Path) -> TemplateConf {
     let conf = path.join(META_CONF);
-    let meta_json = fs::read_to_string(conf).expect("meta.json can't be located or locked");
-    let mut config = parse_config(&meta_json);
+    let meta_json = fs::read_to_string(conf).unwrap();
+    let mut config = parse_config(&meta_json, path.display().to_string().as_str());
 
     normalize(&mut config, path);
 
@@ -70,9 +70,16 @@ impl TemplateConf {
   }
 }
 
-fn parse_config(meta_json: &str) -> TemplateConf {
+fn parse_config(meta_json: &str, location: &str) -> TemplateConf {
   serde_json::from_str(meta_json)
-    .map_err(|e| ProplateError::invalid_template_conf(e.to_string().as_str()))
+    .map_err(|e| {
+      ProplateError::create(ProplateErrorKind::Template {
+        kind: TemplateErrorKind::Invalid,
+        location: location.into(),
+      })
+      .with_ctx("template:parse_config")
+      .with_cause(&e.to_string())
+    })
     .unwrap()
 }
 

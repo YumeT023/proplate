@@ -3,7 +3,7 @@ use std::{
   path::{Path, PathBuf},
 };
 
-use proplate_errors::{ProplateError, ProplateResult};
+use proplate_errors::{ProplateError, ProplateErrorKind, ProplateResult, TemplateErrorKind};
 
 pub fn local_template_path() -> PathBuf {
   proplate_dir().join("builtins").join("templates")
@@ -11,14 +11,18 @@ pub fn local_template_path() -> PathBuf {
 
 pub fn get_local_template<P>(path: P) -> ProplateResult<PathBuf>
 where
-  P: AsRef<Path>,
+  P: AsRef<Path> + Copy,
 {
   let tpath = local_template_path().join(path);
   match tpath.exists() {
     true => Ok(tpath),
-    _ => Err(ProplateError::local_template_not_found(
-      tpath.display().to_string().as_str(),
-    )),
+    _ => Err(
+      ProplateError::create(ProplateErrorKind::Template {
+        kind: TemplateErrorKind::NotFound { is_remote: false },
+        location: path.as_ref().display().to_string(),
+      })
+      .with_ctx("template:get_local"),
+    ),
   }
 }
 

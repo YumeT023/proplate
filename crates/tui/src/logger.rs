@@ -1,5 +1,7 @@
 use owo_colors::OwoColorize;
 
+/// below are common, for more customization in other module, add OwoColorize
+
 pub fn title(s: &str) -> String {
   format!("\n{}", s.bold().bright_yellow())
 }

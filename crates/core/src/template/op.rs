@@ -1,6 +1,6 @@
 use std::{collections::HashMap, fs, path::Path};
 
-use proplate_errors::{ProplateError, ProplateResult};
+use proplate_errors::{ProplateError, ProplateErrorKind, ProplateResult};
 use serde::{Deserialize, Serialize};
 
 use super::interpolation::Interpolate;
@@ -61,20 +61,40 @@ impl Execute for Operation {
       Operation::Copy { file, dest } => {
         let src = Path::new(&file);
         let dest = Path::new(&dest);
-        fs::copy(src, dest).map_err(|e| ProplateError::fs(&e.to_string(), vec![&src, &dest]))?;
+        fs::copy(src, dest).map_err(|e| {
+          ProplateError::create(ProplateErrorKind::Fs {
+            concerned_paths: vec![src.display().to_string(), dest.display().to_string()],
+            operation: "copy".into(),
+          })
+          .with_ctx("op::execute::Copy")
+          .with_cause(&e.to_string())
+        })?;
         Ok(())
       }
       Operation::CopyDir { path, dest } => {
         let path = Path::new(path);
         let dest = Path::new(dest);
-        pfs::copy_fdir(path, dest, None)
-          .map_err(|e| ProplateError::fs(&e.to_string(), vec![path, dest]))?;
+        pfs::copy_fdir(path, dest, None).map_err(|e| {
+          ProplateError::create(ProplateErrorKind::Fs {
+            concerned_paths: vec![path.display().to_string(), dest.display().to_string()],
+            operation: "copy_dir".into(),
+          })
+          .with_ctx("op::execute::CopyDir")
+          .with_cause(&e.to_string())
+        })?;
         Ok(())
       }
       Operation::Remove { files } => {
         for file in files {
           let src = Path::new(&file);
-          pfs::remove_fdir(src).map_err(|e| ProplateError::fs(&e.to_string(), vec![&src]))?;
+          pfs::remove_fdir(src).map_err(|e| {
+            ProplateError::create(ProplateErrorKind::Fs {
+              concerned_paths: vec![src.display().to_string()],
+              operation: "remove_fdir".into(),
+            })
+            .with_ctx("op::execute::Remove")
+            .with_cause(&e.to_string())
+          })?;
         }
         Ok(())
       }
