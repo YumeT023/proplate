@@ -42,27 +42,6 @@ impl ToString for ProplateErrorKind {
   }
 }
 
-impl ProplateErrorKind {
-  pub fn git(cmd: String, raw_stderr: String) -> ProplateErrorKind {
-    Self::Git { cmd, raw_stderr }
-  }
-
-  pub fn template(kind: TemplateErrorKind, location: String) -> ProplateErrorKind {
-    Self::Template { kind, location }
-  }
-
-  pub fn fs(operation: String, concerned_paths: Vec<String>) -> ProplateErrorKind {
-    Self::Fs {
-      operation,
-      concerned_paths,
-    }
-  }
-
-  pub fn cli(kind: CliErrorKind) -> ProplateErrorKind {
-    Self::Cli(kind)
-  }
-}
-
 #[derive(Debug)]
 pub struct ProplateError {
   kind: ProplateErrorKind,
