@@ -1,0 +1,136 @@
+import { Callout } from "nextra/components";
+
+# Creating a simple node.js template
+
+## Overview
+
+This template simplifies the process of creating a basic Node.js project with the Express framework.
+
+## Template structure
+
+Setup the template structure:
+
+```shell
+proplate init nodejs-template
+```
+
+For more information about this command, see [proplate init](#)
+
+## Set up a node.js project
+
+Let's set up a Node.js project similarly to how we typically would, to observe Proplate in action.
+The structure of the template is directly located within the generated **nodejs-template** directory
+
+### Initialize project
+
+```shell
+npm init -y
+```
+
+### Set up express.js
+
+#### Install the necessary dependency
+
+```shell
+npm i express
+```
+
+<Callout>
+To expedite the template initialization process, we prefer to exclude the node_modules directory.
+Users can install dependencies once the boilerplate is generated.
+to inform proplate to ignore it during generation process, include `node_modules`, `package-lock.json` under the **exclude** section in meta.json
+
+```json filename="meta.json" {10} showLineNumbers
+{
+  "id": "nodejs-template",
+  "args": [
+    {
+      "key": "description",
+      "label": "Describe your project",
+      "q_type": "Text"
+    }
+  ],
+  "exclude": ["node_modules", "package-lock.json"]
+}
+```
+
+</Callout>
+
+#### Create your server file
+
+Create a new file, let’s call it server.mjs in the **nodejs-template** directory and add the following code:
+
+```javascript
+import express from "express";
+
+const app = express();
+const port = 5000;
+
+app.get("/", (req, res) => {
+  res.send("Welcome to my server!");
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+```
+
+#### Try it
+
+In the terminal:
+
+```shell
+node server.mjs
+```
+
+#### try to bootstrap a project using our template
+
+```shell
+proplate create --template nodejs-template --dest new-project
+```
+
+For more information about this command, see [bootstrap template](/getting-started/bootstrap-template)
+
+## Dynamic variables
+
+Currently, having to manually change details such as the project name, description, etc..., upon project generation is not ideal.
+However, Proplate has a solution for this. It provides a way to define arguments and bind them to any file.
+
+Let's set up dynamic values for the name and description by specifying them in meta.json.
+
+```json filename="meta.json" {3-12} showLineNumbers
+{
+  "id": "nodejs-template",
+  "args": [
+    {
+      "key": "name",
+      "label": "Project name",
+      "q_type": "Text"
+    },
+    {
+      "key": "description",
+      "label": "Project description",
+      "q_type": "Text"
+    }
+  ],
+  "exclude": ["node_modules", "package-lock.json"]
+}
+```
+
+For more information about dynamic variables, see [dynamic variables](#)
+
+Let's add placeholders for them in package,
+syntax is: `$key`
+
+```json filename="package.json" showLineNumbers
+{
+  "name": "$name",
+  "description": "$description"
+}
+```
+
+```shell
+proplate create --template nodejs-template --dest new-project
+```
+
+Now, Proplate prompts for these arguments interactively when bootstrapping a new project.
